@@ -1,0 +1,90 @@
+{
+  "consumes": [
+    "http",
+    "https"
+  ],
+  "produces": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "项目描述",
+    "title": "title",
+    "termsOfService": "http://127.0.0.1",
+    "contact": {
+      "name": "我的邮箱",
+      "url": "http://www.tov2.com",
+      "email": "121172722@qq.com"
+    },
+    "license": {
+      "name": "我的主页",
+      "url": "http://tov2.com"
+    },
+    "version": "1.0"
+  },
+  "host": "127.0.0.1:8080",
+  "basePath": "/",
+  "paths": {
+    "/user/:id": {
+      "get": {
+        "description": "接口描述",
+        "tags": [
+          "user"
+        ],
+        "summary": "接口描述",
+        "parameters": [
+          {
+            "type": "object",
+            "format": "object",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/user_id__GET"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "描述",
+            "schema": {
+              "$ref": "#/definitions/github.com_ltto_echoT_vo_vo.Result%3Cmain_main.User%3E"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "user_id__GET": {},
+    "github.com_ltto_echoT_vo_vo.Result\u003cmain_main.User\u003e": {
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int"
+        },
+        "data": {
+          "properties": {
+            "age": {
+              "type": "integer",
+              "format": "int"
+            },
+            "name": {
+              "type": "string",
+              "format": "string"
+            }
+          }
+        },
+        "msg": {
+          "type": "string",
+          "format": "string"
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "user"
+    }
+  ]
+}

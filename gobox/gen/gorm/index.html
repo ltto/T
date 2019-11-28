@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script
+            src="https://code.jquery.com/jquery-2.2.4.min.js"
+            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+            crossorigin="anonymous"></script>
+    <style>
+        #src {
+            width: 100%;
+            height: 630px;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <tr>
+        <td><label> host: <input id="host" value="127.0.0.1" type="text"> </label>
+        </td>
+        <td>
+            <label> port: <input id="port" value="3306" type="text"> </label>
+        </td>
+        <td>
+            <label> database: <input id="database" value="im" type="text"> </label>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label> user: <input id="user" value="root" type="text"> </label>
+        </td>
+        <td>
+            <label>password: <input id="password" type="password"> </label>
+        </td>
+        <td>
+            <label> package: <input id="package" value="main" type="text"> </label>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label> <input id="json_able" type="checkbox" name="json_able" value="json_able" checked/> JsonAble </label>
+        </td>
+        <td>
+            <label> <input id="null_able" type="checkbox" name="null_able" value="null_able" checked/> NullAble </label>
+        </td>
+        <td>
+            <label> <input id="gorm_able" type="checkbox" name="gorm_able" value="gorm_able" checked/> GormAble </label>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="3">
+            <div id="tab">
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <!--<button onclick="run()">Test Connection</button>-->
+            <button onclick="run()">Scan Tables</button>
+            <button onclick="f()">Generate code</button>
+        </td>
+    </tr>
+</table>
+
+<textarea id="src"></textarea>
+<script>
+    function run() {
+        $.post("/tables", {
+            "json_able": $("#json_able").is(":checked"),
+            "null_able": $("#null_able").is(':checked'),
+            "gorm_able": $("#gorm_able").is(':checked'),
+            "user": $("#user").val(),
+            "host": $("#host").val(),
+            "port": $("#port").val(),
+            "password": $("#password").val(),
+            "database": $("#database").val(),
+            "package": $("#package").val(),
+        }, function (data) {
+            $("#tab").html("<h3>Table to Struct</h3>")
+            for (i in data) {
+                let name = data[i]
+                name = name.charAt(0).toUpperCase() + name.slice(1)
+                name = toHump(name)
+                $("#tab").append(`<input type="text" class="sqlTab" disabled value="` + data[i] + `"> to <input class="struct" type="text" value="` + name + `"> <br>`)
+            }
+        })
+    }
+
+    function f() {
+        var obj = {}
+        let sqlTab = $(".sqlTab")
+        for (i in sqlTab) {
+            let k = $(".sqlTab:eq(" + i + ")").val()
+            let v = $(".struct:eq(" + i + ")").val()
+            obj[k] = v
+        }
+
+        let data = {
+            "json_able": $("#json_able").is(":checked"),
+            "null_able": $("#null_able").is(':checked'),
+            "gorm_able": $("#gorm_able").is(':checked'),
+            "user": $("#user").val(),
+            "host": $("#host").val(),
+            "port": $("#port").val(),
+            "password": $("#password").val(),
+            "database": $("#database").val(),
+            "package": $("#package").val(),
+            "table_2_struct": obj,
+        }
+        $.ajax({
+            type: "POST",
+            url: "/db2struct",
+            contentType: "application/json;charset=utf-8",
+            data: JSON.stringify(data),
+            success: function (data) {
+                $("#src").html(data)
+            }
+        })
+
+    }
+
+    // 下划线转换驼峰
+    function toHump(name) {
+        return name.replace(/\_(\w)/g, function (all, letter) {
+            return letter.toUpperCase();
+        });
+    }
+
+    // 驼峰转换下划线
+    function toLine(name) {
+        return name.replace(/([A-Z])/g, "_$1").toLowerCase();
+    }
+</script>
+</body>
+</html>
