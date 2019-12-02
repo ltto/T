@@ -11,7 +11,7 @@ import (
 
 func main() {
 	e := echo.New()
-	e.File("/", "gen/gorm/index.html")
+	e.File("/", "gobox/gen/gorm/index.html")
 	e.POST("/db2struct", func(c echo.Context) error {
 		param := new(gorm.Param)
 		if err := c.Bind(param); err != nil {

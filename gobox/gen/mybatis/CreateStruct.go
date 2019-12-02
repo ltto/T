@@ -55,22 +55,23 @@ func createStruct(list map[string][]tableDesc, pkgName, dest string, nullAble bo
 	})
 	fileName := path.Join(dest, "obj.go")
 	os.Remove(fileName)
-	if bytes, err := format.Source([]byte(goFile)); err == nil {
-		if err := ioutil.WriteFile(fileName, bytes, 0777); err != nil {
-			panic(err)
-		}
-	} else {
+	if bytes, err := format.Source([]byte(goFile)); err != nil {
 		if err := ioutil.WriteFile(fileName, []byte(goFile), 0777); err != nil {
 			panic(err)
 		}
+	} else {
+		if err := ioutil.WriteFile(fileName, bytes, 0777); err != nil {
+			panic(err)
+		}
+
 	}
 
 }
 
 const goFile = `package ${packageName}
 ${imports}
-${vars}
 ${init}
+${vars}
 ${structs}
 
 `

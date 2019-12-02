@@ -10,6 +10,7 @@ require (
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/guregu/null v3.4.0+incompatible
+	github.com/jinzhu/gorm v1.9.11
 	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo-contrib v0.7.0
 	github.com/labstack/echo/v4 v4.1.11

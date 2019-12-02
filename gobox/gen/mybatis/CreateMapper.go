@@ -58,7 +58,7 @@ _ "github.com/go-sql-driver/mysql"
 		case "init":
 			read := ""
 			for table := range list {
-				mapper := path.Join(absPath,"mapper", toUp(table)+"Mapper.xml")
+				mapper := path.Join(absPath, "mapper", toUp(table)+"Mapper.xml")
 				vars := toUp(table) + "MP"
 				read += `if bytes, err := ioutil.ReadFile("` + mapper + `");err != nil {
 panic(err)
@@ -90,14 +90,15 @@ ${reads}
 	})
 	fileName := path.Join(absPath, "mapper.go")
 	os.Remove(fileName)
-	if bytes, err := format.Source([]byte(goFile)); err == nil {
-		if err := ioutil.WriteFile(fileName, bytes, 0777); err != nil {
-			panic(err)
-		}
-	} else {
+	if bytes, err := format.Source([]byte(goFile)); err != nil {
 		if err := ioutil.WriteFile(fileName, []byte(goFile), 0777); err != nil {
 			panic(err)
 		}
+	} else {
+		if err := ioutil.WriteFile(fileName, bytes, 0777); err != nil {
+			panic(err)
+		}
+
 	}
 }
 

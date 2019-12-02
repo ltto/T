@@ -45,3 +45,11 @@ func IsStruct(kind reflect.Kind) bool {
 func IsSlice(kind reflect.Kind) bool {
 	return kind == reflect.Slice
 }
+
+func IsValuer(t reflect.Type) bool {
+	if method, ok := t.MethodByName("Value"); ok {
+		mt := method.Type
+		return mt.NumIn() == 0 && mt.NumOut() == 2 && mt.Out(0).String() == "driver.Value" && mt.Out(1).String() == "error"
+	}
+	return false
+}

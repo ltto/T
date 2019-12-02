@@ -38,7 +38,7 @@ func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind b
 		val = val.Elem()
 	}
 
-	if typ.Kind() != reflect.Struct && !(typ.Kind() == reflect.Map && typ.Elem().Key().Kind() == reflect.String && typ.Elem().Kind() == reflect.Interface) {
+	if typ.Kind() != reflect.Struct && !(typ.Kind() == reflect.Map && typ.Key().Kind() == reflect.String && typ.Elem().Kind() == reflect.Interface) {
 		return errors.New("binding element must be a struct or map[string]interface")
 	}
 
