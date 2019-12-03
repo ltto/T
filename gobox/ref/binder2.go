@@ -23,9 +23,10 @@ func BreakDataVal(ptr interface{}, m map[string]interface{}, tag, gap string) {
 		if tag != "" {
 			tag = tag + "."
 		}
-		iter := val.MapRange()
-		for iter.Next() {
-			BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s%s%s", tag, gap, iter.Key().String()), gap)
+		iter := val.MapKeys()
+		for _, k := range iter {
+			v := val.MapIndex(k)
+			BreakDataVal(v.Interface(), m, fmt.Sprintf("%s%s%s", tag, gap, k.String()), gap)
 		}
 	} else if typ.Kind() == reflect.Slice {
 		for i := 0; i < val.Cap(); i++ {
@@ -62,9 +63,10 @@ func BreakDataVal(ptr interface{}, m map[string]interface{}, tag, gap string) {
 					BreakDataVal(structField.Index(j).Interface(), m, fmt.Sprintf("%s[%d]", inputFieldName, j), gap)
 				}
 			} else if structFieldType.Kind() == reflect.Map {
-				iter := structField.MapRange()
-				for iter.Next() {
-					BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s%s%s", inputFieldName, gap, iter.Key().String()), gap)
+				keys := structField.MapKeys()
+				for _, key := range keys {
+					v := structField.MapIndex(key)
+					BreakDataVal(v.Interface(), m, fmt.Sprintf("%s%s%s", inputFieldName, gap, key.String()), gap)
 				}
 			} else if IsBaseTime(structFieldType) {
 				m[inputFieldName] = breakProperType(structField.Type(), structField)
