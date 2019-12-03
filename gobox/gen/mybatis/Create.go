@@ -126,12 +126,13 @@ func ListParam(db *sql.DB, nullAble bool) map[string][]tableDesc {
 }
 func DoCreat(pkgName, dest, url string, list map[string][]tableDesc) {
 	nullAble := true
-	//createMapperXml(list, dest, nullAble)
+	createMapperXml(list, dest, nullAble)
 	createStruct(list, pkgName, dest, nullAble)
-	//createMapper(list, pkgName, dest, url)
-	//createAPI(list, pkgName, dest)
+	createMapper(list, pkgName, dest, url)
+	createAPI(list, pkgName, dest)
 	//createGormF(list, pkgName, dest, url)
 	createGormM(list, pkgName, dest, url)
+	createMapperTpl(list, dest)
 }
 
 func toUp(s string) string {

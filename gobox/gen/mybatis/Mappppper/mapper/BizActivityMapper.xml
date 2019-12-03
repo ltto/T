@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://raw.githubusercontent.com/ltto/GoMybatis/master/mybatis-3-mapper.dtd">
+<mapper>
+    <!--logic_enable 逻辑删除字段-->
+    <!--logic_deleted 逻辑删除已删除字段-->
+    <!--logic_undelete 逻辑删除 未删除字段-->
+    <!--version_enable 乐观锁版本字段,支持int,int8,int16,int32,int64-->
+    <resultMap id="BaseResultMap" tables="biz_user_address">
+        <id column="id" property="Id" langType="string"/>
+        <result column="name" property="Name" langType="string"/>
+        <result column="uuid" property="Uuid" langType="string"/>
+        <result column="pc_link" property="PcLink" langType="string"/>
+        <result column="h5_link" property="H5Link" langType="string"/>
+        <result column="remark" property="Remark" langType="string"/>
+        <result column="version" property="Version" langType="int"/>
+        <result column="create_time" property="CreateTime" langType="time.Time"/>
+        <result column="delete_flag" property="DeleteFlag" langType="int"/>
+
+    </resultMap>
+
+    <sql id="base">
+        `id`, `name`, `uuid`, `pc_link`, `h5_link`, `remark`, `version`, `create_time`, `delete_flag`
+    </sql>
+    <!-- insert -->
+    <insert id="Save" useGeneratedKeys="true">
+        INSERT INTO `biz_activity`(<include refid="base"/>) VALUES( null, #{obj.Name}, #{obj.Uuid}, #{obj.PcLink}, #{obj.H5Link}, #{obj.Remark}, #{obj.Version}, #{obj.CreateTime}, #{obj.DeleteFlag})
+    </insert>
+    <!-- selectOne -->
+    <select id="SelectByID">
+        SELECT
+        <include refid="base"/>
+        FROM `biz_activity` WhERE `id` = #{id}
+    </select>
+
+    <select id="SelectLimit">
+        SELECT
+        <include refid="base"/>
+        FROM `biz_activity`
+        limit #{o},#{l}
+    </select>
+
+	<select id="SelectCount">
+        SELECT count(1) FROM `biz_activity`
+    </select>
+
+    <!-- update -->
+    <update id="UpdateByID">
+        UPDATE `biz_activity` SET `id`=#{obj.id} 
+        <if test="obj.Id.Valid">,`id` = #{obj.Id}</if>
+        <if test="obj.Name.Valid">,`name` = #{obj.Name}</if>
+        <if test="obj.Uuid.Valid">,`uuid` = #{obj.Uuid}</if>
+        <if test="obj.PcLink.Valid">,`pc_link` = #{obj.PcLink}</if>
+        <if test="obj.H5Link.Valid">,`h5_link` = #{obj.H5Link}</if>
+        <if test="obj.Remark.Valid">,`remark` = #{obj.Remark}</if>
+        <if test="obj.Version.Valid">,`version` = #{obj.Version}</if>
+        <if test="obj.CreateTime.Valid">,`create_time` = #{obj.CreateTime}</if>
+        <if test="obj.DeleteFlag.Valid">,`delete_flag` = #{obj.DeleteFlag}</if>
+        WHERE `id`=#{obj.id}
+    </update>
+
+    <!--delete one-->
+    <delete id="DeleteByID">
+        delete FROM `biz_activity` WHERE `id`=#{id}
+    </delete>
+
+    <!-- delete list -->
+    <delete id="DeleteByIDs">
+        delete FROM `biz_activity` WHERE `id` in
+        <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+    </delete>
+</mapper>

@@ -6,13 +6,13 @@ import (
 	"reflect"
 )
 
-func BreakData(ptr interface{},tag string) map[string]interface{}{
+func BreakData(ptr interface{}, tag, gap string) map[string]interface{} {
 	m := make(map[string]interface{})
-	BreakDataVal(ptr, m, tag)
+	BreakDataVal(ptr, m, tag, gap)
 	return m
 }
 
-func BreakDataVal(ptr interface{}, m map[string]interface{}, tag string) {
+func BreakDataVal(ptr interface{}, m map[string]interface{}, tag, gap string) {
 	val := reflect.ValueOf(ptr)
 	for val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -25,11 +25,11 @@ func BreakDataVal(ptr interface{}, m map[string]interface{}, tag string) {
 		}
 		iter := val.MapRange()
 		for iter.Next() {
-			BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s.%s", tag, iter.Key().String()));
+			BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s%s%s", tag, gap, iter.Key().String()), gap)
 		}
 	} else if typ.Kind() == reflect.Slice {
 		for i := 0; i < val.Cap(); i++ {
-			BreakDataVal(val.Index(i).Interface(), m, fmt.Sprintf("%s[%d]", tag, i))
+			BreakDataVal(val.Index(i).Interface(), m, fmt.Sprintf("%s[%d]", tag, i), gap)
 		}
 	} else if IsBaseTime(typ) {
 		m[tag] = breakProperType(typ, val)
@@ -56,15 +56,15 @@ func BreakDataVal(ptr interface{}, m map[string]interface{}, tag string) {
 			} else if obj, ok := breakField(structField.Type(), structField); ok {
 				m[inputFieldName] = obj
 			} else if structFieldType.Kind() == reflect.Struct && !IsTime(structFieldType) {
-				BreakDataVal(structField.Addr().Interface(), m, inputFieldName)
+				BreakDataVal(structField.Addr().Interface(), m, inputFieldName, gap)
 			} else if structFieldType.Kind() == reflect.Slice {
 				for j := 0; j < structField.Cap(); j++ {
-					BreakDataVal(structField.Index(j).Interface(), m, fmt.Sprintf("%s[%d]", inputFieldName, j))
+					BreakDataVal(structField.Index(j).Interface(), m, fmt.Sprintf("%s[%d]", inputFieldName, j), gap)
 				}
 			} else if structFieldType.Kind() == reflect.Map {
 				iter := structField.MapRange()
 				for iter.Next() {
-					BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s.%s", inputFieldName, iter.Key().String()))
+					BreakDataVal(iter.Value().Interface(), m, fmt.Sprintf("%s%s%s", inputFieldName, gap, iter.Key().String()), gap)
 				}
 			} else if IsBaseTime(structFieldType) {
 				m[inputFieldName] = breakProperType(structField.Type(), structField)
