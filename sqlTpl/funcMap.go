@@ -8,7 +8,7 @@ import (
 )
 
 var funcMap = map[string]interface{}{
-	"tplfor": Foreach,
+	"tplfor":  Foreach,
 	"blank":   Blank,
 	"unBlank": unBlank,
 }
@@ -28,9 +28,9 @@ func Foreach(data interface{}, open string, close string, separator string, val 
 			}
 		}
 	case reflect.Map:
-		iter := v.MapRange()
-		for iter.Next() {
-			strs += fmt.Sprintf("#{%s.%s}", val, iter.Key().String()) + separator
+		keys := v.MapKeys()
+		for _, k := range keys {
+			strs += fmt.Sprintf("#{%s.%s}", val, k.String()) + separator
 		}
 		strs = strs[0 : len(strs)-len(separator)]
 	default:

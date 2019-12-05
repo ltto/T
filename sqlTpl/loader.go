@@ -1,6 +1,7 @@
 package sqlTpl
 
 import (
+	"database/sql"
 	"errors"
 	"io/ioutil"
 	"path"
@@ -11,7 +12,13 @@ import (
 	"unsafe"
 )
 
-func (t TplEngine) LocalMapper(ptr interface{}) {
+func (t TplEngine) LoadMappers(ptr ...interface{}) {
+	for i := range ptr {
+		t.LoadMapper(ptr[i])
+	}
+}
+
+func (t TplEngine) LoadMapper(ptr interface{}) {
 	if !t.scan {
 		panic(errors.New("no scanner files"))
 	}
@@ -30,7 +37,9 @@ func (t TplEngine) LocalMapper(ptr interface{}) {
 			continue
 		}
 		tag := structField.Tag.Get("mapperParams")
-		field.Set(t.makeFunc(field.Type(), t.m[pt.Name()+".tpl"].TplMap[structField.Name], tag))
+		outTag := structField.Tag.Get("mapperOut")
+		name := pt.Name()
+		field.Set(t.makeFunc(field.Type(), t.m[name+".gohtml"].TplMap[structField.Name], tag, outTag))
 	}
 }
 
@@ -38,43 +47,61 @@ func (t *TplEngine) Scanner(dest string) {
 	if t.scan {
 		return
 	}
-	t.m = make(map[string]SqlTplFile)
 	dir, err := ioutil.ReadDir(dest)
 	if err != nil {
 		panic(err)
 	}
+	m := make(map[string][]byte, len(dir))
 	for _, info := range dir {
-		if info.IsDir() || !strings.HasSuffix(info.Name(), ".tpl") {
+		if info.IsDir() || !strings.HasSuffix(info.Name(), ".gohtml") {
 			continue
 		}
-		filet := template.New(info.Name())
-		filet.Funcs(funcMap)
-		byte, err := ioutil.ReadFile(path.Join(dest, info.Name()))
+		bytes, err := ioutil.ReadFile(path.Join(dest, info.Name()))
 		if err != nil {
 			panic(err)
 		}
-		files, err := filet.Parse(string(byte))
-		if err != nil {
-			panic(err)
-		}
-		name := reflect.ValueOf(files).Elem().FieldByName("common")
-		mapRange := name.Elem().FieldByName("tmpl").MapRange()
-		fileTpl := SqlTplFile{}
-		tplMap := make(map[string]*SqlTpl)
-		for mapRange.Next() {
-			key := mapRange.Key()
-			pointer := mapRange.Value().Pointer()
-			tpl := (*template.Template)(unsafe.Pointer(pointer))
-			tpl.Funcs(funcMap)
-			keyStr := key.String()
-			if filepath.Base(info.Name()) == keyStr {
-				fileTpl.t = tpl
-			} else {
-				tplMap[keyStr] = NewSqlTpl(tpl, keyStr, t.db)
-			}
-		}
-		fileTpl.TplMap = tplMap
-		t.m[info.Name()] = fileTpl
+		m[info.Name()] = bytes
+	}
+	t.ScannerByBytes(m)
+	t.scan = true
+}
+
+func (t *TplEngine) ScannerByBytes(b map[string][]byte) {
+	if t.scan {
+		return
+	}
+	t.TPLS = b
+	t.m = make(map[string]SqlTplFile)
+	for s, bytes := range b {
+		fileTpl := LoadTpl(s, bytes, t.db)
+		t.m[s] = fileTpl
 	}
 	t.scan = true
+}
+
+func LoadTpl(info string, bytes []byte, DB *sql.DB) SqlTplFile {
+	filet := template.New(info)
+	filet.Funcs(funcMap)
+	files, err := filet.Parse(string(bytes))
+	if err != nil {
+		panic(err)
+	}
+	name := reflect.ValueOf(files).Elem().FieldByName("common")
+	mapSet := name.Elem().FieldByName("tmpl")
+	keys := mapSet.MapKeys()
+	fileTpl := SqlTplFile{}
+	tplMap := make(map[string]*SqlTpl)
+	for _, key := range keys {
+		pointer := mapSet.MapIndex(key).Pointer()
+		tpl := (*template.Template)(unsafe.Pointer(pointer))
+		tpl.Funcs(funcMap)
+		keyStr := key.String()
+		if filepath.Base(info) == keyStr {
+			fileTpl.t = tpl
+		} else {
+			tplMap[keyStr] = NewSqlTpl(tpl, keyStr, DB)
+		}
+	}
+	fileTpl.TplMap = tplMap
+	return fileTpl
 }

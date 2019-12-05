@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"regexp"
-	"strings"
 	"text/template"
 
 	"github.com/ltto/T/gobox/ref"
@@ -23,10 +22,6 @@ type SqlTpl struct {
 	db       *sql.DB
 }
 
-func IsQuery(keyStr string) bool {
-	b := strings.HasPrefix(keyStr, "Get") || strings.HasPrefix(keyStr, "List") || strings.HasPrefix(keyStr, "Query") || strings.HasPrefix(keyStr, "Select")
-	return b
-}
 
 func NewSqlTpl(t *template.Template, funcName string, DB *sql.DB) *SqlTpl {
 	return &SqlTpl{t: t, funcName: funcName, db: DB}
@@ -83,6 +78,7 @@ func (s SqlTpl) ExecSQL(data map[string]interface{}, tx *sql.Tx) (QueryResult, e
 			return result, err
 		}
 	}
+	fmt.Println("SQL RESULT", result)
 	return result, nil
 }
 

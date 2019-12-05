@@ -1,0 +1,3 @@
+{{define "SelectByName"}}
+    SELECT `id`,`group`,`password`,`name`,`state`,`privilege` FROM `userinfo` WHERE `name`=#{name}
+{{end}}
