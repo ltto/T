@@ -3,6 +3,7 @@ module github.com/ltto/T
 go 1.13
 
 require (
+	github.com/bndr/gotabulate v1.1.2
 	github.com/gin-contrib/sessions v0.0.1
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-openapi/jsonreference v0.19.3

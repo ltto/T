@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreat(t *testing.T) {
-	url := "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true"
+	url := "root@tcp(127.0.0.1:3306)/hress2?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true"
 	db, err := sql.Open("mysql", url)
 	if err != nil {
 		panic(err)

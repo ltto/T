@@ -128,7 +128,8 @@ func DoCreat(pkgName, dest, url string, list map[string][]tableDesc) {
 	nullAble := true
 	createMapperXml(list, dest, nullAble)
 	createStruct(list, pkgName, dest, nullAble)
-	createMapper(list, pkgName, dest, url)
+	//createMapper(list, pkgName, dest, url)
+	createMapper2(list, pkgName, dest, url)
 	createAPI(list, pkgName, dest)
 	//createGormF(list, pkgName, dest, url)
 	createGormM(list, pkgName, dest, url)

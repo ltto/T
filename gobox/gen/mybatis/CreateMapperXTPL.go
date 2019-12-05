@@ -53,7 +53,7 @@ func createMapperTpl(list map[string][]tableDesc, dest string) {
 			return ""
 		})
 		os.MkdirAll(path.Join(dest, "tpl"), 0777)
-		filePath := path.Join(dest, "tpl", toUp(table)+".tpl")
+		filePath := path.Join(dest, "tpl", toUp(table)+"Mapper.gohtml")
 		os.Remove(filePath)
 		if err := ioutil.WriteFile(filePath, []byte(tpl), 0777); err != nil {
 			panic(err)
