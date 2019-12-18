@@ -3,16 +3,17 @@ package sqlTpl
 import (
 	"database/sql"
 
+	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 )
 
-func rows2maps(rows *sql.Rows) (resultsSlice QueryResult, err error) {
+func rows2maps(rows *sql.Rows) (resultsSlice Tsql.QueryResult, err error) {
 	for i := 0; rows.Next(); i++ {
 		result, err := row2map(rows)
 		if err != nil {
-			return QueryResult{}, err
+			return Tsql.QueryResult{}, err
 		}
-		resultsSlice.append(result)
+		resultsSlice.Append(result)
 	}
 	return resultsSlice, nil
 }

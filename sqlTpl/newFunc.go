@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 )
 
@@ -43,7 +44,7 @@ func (t TplEngine) makeFunc(typ reflect.Type, tpl *SqlTpl, tag, outTag string) r
 
 	return reflect.MakeFunc(typ, func(in []reflect.Value) []reflect.Value {
 		var (
-			result      QueryResult
+			result      Tsql.QueryResult
 			err         error
 			tx          *sql.Tx
 			returnValue reflect.Value

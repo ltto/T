@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"text/template"
 
+	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 	"github.com/ltto/T/gobox/str"
 )
@@ -26,7 +27,7 @@ type SqlTpl struct {
 func NewSqlTpl(t *template.Template, funcName string, DB *sql.DB) *SqlTpl {
 	return &SqlTpl{t: t, funcName: funcName, db: DB}
 }
-func (s SqlTpl) Query(tx *sql.Tx, sqlStr string, param ...interface{}) (QueryResult, error) {
+func (s SqlTpl) Query(tx *sql.Tx, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
 	var (
 		rows *sql.Rows
 		err  error
@@ -37,16 +38,16 @@ func (s SqlTpl) Query(tx *sql.Tx, sqlStr string, param ...interface{}) (QueryRes
 		rows, err = tx.Query(sqlStr, param...)
 	}
 	if err != nil {
-		return QueryResult{}, err
+		return Tsql.QueryResult{}, err
 	}
 	return rows2maps(rows)
 }
-func (s SqlTpl) Exec(tx *sql.Tx, sqlStr string, param ...interface{}) (QueryResult, error) {
+func (s SqlTpl) Exec(tx *sql.Tx, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
 	var (
 		err    error
 		result sql.Result
 	)
-	rt := QueryResult{}
+	rt := Tsql.QueryResult{}
 	if tx == nil {
 		result, err = s.db.Exec(sqlStr, param...)
 	} else {
@@ -57,16 +58,16 @@ func (s SqlTpl) Exec(tx *sql.Tx, sqlStr string, param ...interface{}) (QueryResu
 	}
 	id, _ := result.LastInsertId()
 	affected, _ := result.RowsAffected()
-	rt.data = make([]map[string][]ref.Val, 1)
-	rt.data[0] = make(map[string][]ref.Val)
-	rt.data[0]["sql.insert"] = []ref.Val{ref.NewVal(id)}
-	rt.data[0]["sql.update"] = []ref.Val{ref.NewVal(affected)}
+	rt.Data = make([]map[string][]ref.Val, 1)
+	rt.Data[0] = make(map[string][]ref.Val)
+	rt.Data[0]["sql.insert"] = []ref.Val{ref.NewVal(id)}
+	rt.Data[0]["sql.update"] = []ref.Val{ref.NewVal(affected)}
 	return rt, nil
 }
 
-func (s SqlTpl) ExecSQL(data map[string]interface{}, tx *sql.Tx) (QueryResult, error) {
+func (s SqlTpl) ExecSQL(data map[string]interface{}, tx *sql.Tx) (Tsql.QueryResult, error) {
 	SQL, SQLParams, err := s.ParseSQL(data)
-	var result QueryResult
+	var result Tsql.QueryResult
 	fmt.Println("ExecSQL:", SQL, )
 	fmt.Println("SQLParams", SQLParams)
 	if Operate(SQL) == SELECT {
