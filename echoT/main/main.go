@@ -12,12 +12,13 @@ import (
 )
 
 func main() {
+
 	echoT.R(echoT.RouterInfo{Mapping: "/user/:id", HttpMethod: http.MethodGet,
 		Auth:         false,
 		InterfaceMap: echoT.InterfaceMap{"data": reflect.TypeOf(User{})},
 		Do: func(res struct {
 			Name123 string `query:"name123"`
-			ID      string `path:"id"`
+			ID      string     `path:"id"`
 			User
 		}, c echo.Context) vo.Result {
 			sess := echoT.GetSession(c)
