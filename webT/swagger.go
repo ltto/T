@@ -13,7 +13,15 @@ type Params struct {
 	Body  map[string]reflect.Type
 }
 
-func swagger(baseURL string) swaggerT.Server {
+func swagger(baseURL string, ) swaggerT.Server {
+	server := swaggerT.Server{
+		WWW:      "http://127.0.0.1",
+		Title:    "项目-swagger",
+		Desc:     "项目描述",
+		BasePath: baseURL,
+		Host:     "127.0.0.1:8080",
+		Version:  "1.0",
+	}
 	var paths []swaggerT.Path
 	var AllTags = make(map[string]struct{})
 	for _, v := range RouterMap {
@@ -42,7 +50,7 @@ func swagger(baseURL string) swaggerT.Server {
 			Tags:         v.Doc.Tags,
 			Desc:         v.Doc.Desc,
 			Title:        v.Doc.Title,
-			URL:          baseURL + v.Mapping,
+			URL:          server.BasePath + v.Mapping,
 			Method:       v.HttpMethod,
 			Out:          v.f.out,
 			Params:       params,
@@ -53,16 +61,8 @@ func swagger(baseURL string) swaggerT.Server {
 	for k := range AllTags {
 		tagsArr = append(tagsArr, k)
 	}
-	server := swaggerT.Server{
-		Tags:     tagsArr,
-		WWW:      "http://127.0.0.1",
-		Title:    "title",
-		Desc:     "项目描述",
-		BasePath: "/",
-		Host:     "127.0.0.1:8080",
-		Version:  "1.0",
-		Paths:    paths,
-	}
+	server.Paths = paths
+	server.Tags = tagsArr
 	server.Init()
 	return server
 }

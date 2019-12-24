@@ -1,7 +1,6 @@
 package swaggerT
 
 import (
-	"fmt"
 	"net/http"
 	"reflect"
 
@@ -117,7 +116,6 @@ func (p Path) initBody(m map[string]reflect.Type) spec.Parameter {
 	schema := spec.Schema{}
 	schema.Properties = make(map[string]spec.Schema)
 	for name, val := range m {
-		fmt.Println(name, val)
 		ref := SchemaMap.getRef(NewKey(val, InterfaceMap{}))
 		if ref != nil {
 			schema.Properties[name] = *ref
