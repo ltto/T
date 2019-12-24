@@ -5,6 +5,8 @@ go 1.13
 require (
 	github.com/beevik/etree v1.1.0
 	github.com/bndr/gotabulate v1.1.2
+	github.com/gin-contrib/sessions v0.0.1
+	github.com/gin-gonic/gin v1.4.0
 	github.com/go-openapi/jsonreference v0.19.3
 	github.com/go-openapi/spec v0.19.4
 	github.com/go-sql-driver/mysql v1.4.1

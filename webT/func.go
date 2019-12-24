@@ -2,8 +2,6 @@ package webT
 
 import (
 	"reflect"
-
-	"github.com/labstack/echo/v4"
 )
 
 type Func struct {
@@ -11,6 +9,7 @@ type Func struct {
 	in           *reflect.Type
 	inIn         int
 	ctx          int
+	ginCtx       bool
 	out          *reflect.Type
 	InterfaceMap InterfaceMap
 	outLen       int
@@ -18,10 +17,14 @@ type Func struct {
 	v            reflect.Value
 }
 
-func (f Func) Call(ctx echo.Context) (interface{}, error) {
+func (f Func) Call(ctx *Context) (interface{}, error) {
 	var ins = make([]reflect.Value, f.inLen)
 	if f.ctx >= 0 {
-		ins[f.ctx] = reflect.ValueOf(ctx)
+		if f.ginCtx {
+			ins[f.ctx] = reflect.ValueOf(ctx.Context)
+		} else {
+			ins[f.ctx] = reflect.ValueOf(ctx)
+		}
 	}
 	if f.inIn >= 0 {
 		newIn := reflect.New(*f.in)
@@ -49,8 +52,14 @@ func NewFunc(f interface{}) *Func {
 	ft := fv.Type()
 	for i := 0; i < ft.NumIn(); i++ {
 		in := ft.In(i)
-		if in.String() == "echo.Context" {
+		for in.Kind() == reflect.Ptr {
+			in = in.Elem()
+		}
+		if in.String() == "Context" {
 			fff.ctx = i
+		} else if in.String() == "gin.Context" {
+			fff.ctx = i
+			fff.ginCtx = true
 		} else {
 			fff.inIn = i
 			fff.in = &in

@@ -5,9 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 )
 
 var RouterMap = make(map[string]*RouterInfo, 0)
@@ -66,40 +64,22 @@ func (r *RouterInfo) Router() RouterInfo {
 	r.f = NewFunc(r.Do)
 	RouterMap[r.Mapping+r.HttpMethod] = r
 	r.rout = true
-	han := func(ctx echo.Context) error {
-		ses, e := session.Get("sessionId", ctx)
-		if e != nil {
-			return e
+	han := func(c *gin.Context) {
+		if out, err := r.f.Call(NewContext(c)); err != nil {
+			c.JSON(http.StatusOK, err.Error())
+		} else {
+			c.JSON(http.StatusOK, out)
 		}
-		if ses.IsNew {
-			ses.Options = &sessions.Options{
-				MaxAge: 60 * 60, // 以秒为单位
-			}
-		}
-
-		if err := ses.Save(ctx.Request(), ctx.Response()); err != nil {
-			return err
-		}
-		if out, err := r.f.Call(ctx); err != nil {
-			return err
-		} else if err := ctx.JSON(200, out); err != nil {
-			return err
-		}
-		return nil
-	}
-	var m []echo.MiddlewareFunc
-	if r.Auth {
-		m = append(m, AuthMiddleware)
 	}
 	switch r.HttpMethod {
 	case http.MethodGet:
-		g.GET(r.Mapping, han, m...)
+		g.GET(r.Mapping, han, )
 	case http.MethodPost:
-		g.POST(r.Mapping, han, m...)
+		g.POST(r.Mapping, han, )
 	case http.MethodPut:
-		g.PUT(r.Mapping, han, m...)
+		g.PUT(r.Mapping, han, )
 	case http.MethodDelete:
-		g.DELETE(r.Mapping, han, m...)
+		g.DELETE(r.Mapping, han, )
 	}
 	return *r
 }

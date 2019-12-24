@@ -1,7 +1,9 @@
 package webT
 
 import (
+	"fmt"
 	"reflect"
+	"regexp"
 
 	"github.com/ltto/T/swaggerT"
 )
@@ -21,6 +23,10 @@ func swagger(baseURL string, ) swaggerT.Server {
 		BasePath: baseURL,
 		Host:     "127.0.0.1:8080",
 		Version:  "1.0",
+	}
+	reg, err := regexp.Compile(":([a-z|A-Z|0-9]*)")
+	if err != nil {
+		panic(err)
 	}
 	var paths []swaggerT.Path
 	var AllTags = make(map[string]struct{})
@@ -46,6 +52,9 @@ func swagger(baseURL string, ) swaggerT.Server {
 			}
 			TMap[k] = vt
 		}
+		v.Mapping = reg.ReplaceAllStringFunc(v.Mapping, func(s string) string {
+			return fmt.Sprintf("{%s}", s[1:])
+		})
 		paths = append(paths, swaggerT.Path{
 			Tags:         v.Doc.Tags,
 			Desc:         v.Doc.Desc,

@@ -1,26 +1,19 @@
 package webT
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/gin-gonic/gin"
 )
 
-var e = echo.New()
+var e = gin.New()
 var g = e.Group("/")
 
 func init() {
-	e.Binder = &MyBinder{}
-	AddMiddleware(sessionMiddleware)
-	e.HTTPErrorHandler = ErrorHandler
-}
-
-func AddMiddleware(m ...echo.MiddlewareFunc) {
-	g = e.Group("/", m...)
 }
 
 func Run(address string) error {
 	server := swagger("/")
-	g.GET("swagger/*", func(c echo.Context) error {
-		return server.Http(c.Request(), c.Response())
+	g.GET("swagger/:path", func(c *gin.Context) {
+		server.Http(c.Request, c.Writer)
 	})
-	return e.Start(address)
+	return e.Run(address)
 }
