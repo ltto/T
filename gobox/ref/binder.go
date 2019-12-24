@@ -29,28 +29,48 @@ func Str2Val(data map[string][]string) map[string][]Val {
 }
 
 func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind bool) error {
-	typ := reflect.TypeOf(ptr).Elem()
-	val := reflect.ValueOf(ptr).Elem()
-	if typ.Kind() == reflect.Ptr {
+	typ := reflect.TypeOf(ptr)
+	val := reflect.ValueOf(ptr)
+	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
-		newV := reflect.New(typ)
-		val.Set(newV)
 		val = val.Elem()
 	}
 
-	if typ.Kind() != reflect.Struct && !(typ.Kind() == reflect.Map && typ.Key().Kind() == reflect.String && typ.Elem().Kind() == reflect.Interface) {
+	if typ.Kind() != reflect.Struct &&
+		!(typ.Kind() == reflect.Map &&
+			typ.Key().Kind() == reflect.String &&
+			typ.Elem().Kind() == reflect.Interface) &&
+		!(IsBase(typ.Kind())) {
 		return errors.New("binding element must be a struct or map[string]interface")
 	}
 
 	if typ.Kind() == reflect.Map {
 		if map_, ok := val.Interface().(map[string]interface{}); ok {
+			if map_ == nil {
+				val.Set(reflect.ValueOf(make(map[string]interface{})))
+				map_ = val.Interface().(map[string]interface{})
+			}
 			for k := range data {
 				if len(data[k]) == 1 {
-					map_[k] = data[k][0]
+					map_[k] = data[k][0].Data()
 				} else {
-					map_[k] = data[k]
+					vs := make([]interface{}, len(data[k]))
+					for i := range data[k] {
+						vs[i] = data[k][i].Data()
+					}
+					map_[k] = vs
 				}
 			}
+			return nil
+		}
+	}
+	if IsBase(typ.Kind()) {
+		for _, vals := range data {
+			newV := reflect.New(typ)
+			if err := setWithProperType(typ.Kind(), vals[0], newV.Elem()); err != nil {
+				return err
+			}
+			val.Set(newV.Elem())
 			return nil
 		}
 	}

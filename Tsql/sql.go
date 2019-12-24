@@ -9,7 +9,6 @@ import (
 	"github.com/ltto/T/gobox/ref"
 )
 
-
 type QueryResult struct {
 	Data []map[string][]ref.Val
 }
@@ -48,14 +47,17 @@ func (q *QueryResult) Append(cell map[string][]ref.Val) {
 	q.Data = append(q.Data, cell)
 }
 
+func (q QueryResult) Scan(ptr interface{}, outTag string) error {
+	err := q.DecodePtr(reflect.ValueOf(ptr), outTag)
+	return err
+}
+
 func (q QueryResult) DecodePtr(ptr reflect.Value, outTag string) error {
 	if q.IsBlank() {
 		return nil
 	}
-	v := ptr
-	var ptred bool
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
+	for ptr.Kind() == reflect.Ptr {
+		ptr = ptr.Elem()
 	}
 	if outTag != "" {
 		if len(q.Data) != 1 {
@@ -63,24 +65,20 @@ func (q QueryResult) DecodePtr(ptr reflect.Value, outTag string) error {
 			return errors.New(fmt.Sprintf("need 1 fund %d", i))
 		}
 		vals := q.Data[0][outTag]
-		vals[0].BindData(ptr, ptred)
+		vals[0].BindData(ptr, false)
 	}
-	ptrV := v.Addr().Interface()
-	if ptrV == nil {
-		return nil
-	}
-	if v.Kind() == reflect.Slice {
-		slice := reflect.ValueOf(ptrV).Elem()
+	if ptr.Kind() == reflect.Slice {
+		slice := ptr
 		for i := range q.Data {
-			newV := reflect.New(v.Type().Elem())
+			newV := reflect.New(slice.Type().Elem())
 			if err := ref.BindDataVal(newV.Interface(), q.Data[i], "sql", false); err != nil {
 				return err
 			}
 			slice = reflect.Append(slice, newV.Elem())
 		}
-		reflect.ValueOf(ptrV).Elem().Set(slice)
-	} else if len(q.Data) == 1 {
-		return ref.BindDataVal(ptrV, q.Data[0], "sql", false)
+		ptr.Set(slice)
+	} else if len(q.Data) >= 1 {
+		return ref.BindDataVal(ptr.Interface(), q.Data[0], "sql", false)
 	}
 	return nil
 }

@@ -1,9 +1,8 @@
-package echoT
+package webT
 
 import (
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 
 	"github.com/gorilla/sessions"
@@ -13,20 +12,21 @@ import (
 
 var RouterMap = make(map[string]*RouterInfo, 0)
 
-type InterfaceMap map[string]reflect.Type
+type InterfaceMap map[string]interface{}
 type RouterDoc struct {
 	Title string
 	Desc  string
+	Tags  []string
 }
 type RouterInfo struct {
 	Doc          RouterDoc
 	Mapping      string
 	HttpMethod   string
-	Auth         bool
+	InterfaceMap InterfaceMap
 	Do           interface{}
+	Auth         bool
 	f            *Func
 	rout         bool
-	InterfaceMap InterfaceMap
 }
 
 func (r *RouterInfo) DoAuth() RouterInfo {
@@ -73,7 +73,6 @@ func (r *RouterInfo) Router() RouterInfo {
 		}
 		if ses.IsNew {
 			ses.Options = &sessions.Options{
-				Path:   "/",
 				MaxAge: 60 * 60, // 以秒为单位
 			}
 		}

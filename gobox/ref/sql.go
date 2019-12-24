@@ -61,6 +61,9 @@ type Val struct {
 
 func NewVal(src interface{}) Val {
 	typeVal, deep := SrcTypeVal(src)
+	if b, ok := typeVal.([]uint8); ok {
+		typeVal = string(b)
+	}
 	val := Val{src: src, data: typeVal, Deep: deep, nil: typeVal == nil}
 	return val
 }

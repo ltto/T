@@ -1,4 +1,4 @@
-package echoT
+package webT
 
 import (
 	"github.com/gorilla/sessions"
@@ -8,7 +8,7 @@ import (
 
 var sessionMiddleware = session.Middleware(sessions.NewCookieStore([]byte("133")))
 
-func GetSession(c echo.Context) (*sessions.Session) {
+func GetSession(c echo.Context) *sessions.Session {
 	get, err := session.Get("sessionId", c)
 	if err != nil {
 		panic(err)

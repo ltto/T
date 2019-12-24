@@ -23,11 +23,37 @@ type SqlTpl struct {
 	db       *sql.DB
 }
 
+type SQLCommon interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+func BaseQuery(tx SQLCommon, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
+	rows, err := tx.Query(sqlStr, param...)
+	if err != nil {
+		return Tsql.QueryResult{}, err
+	}
+	return rows2maps(rows)
+}
+func BaseExec(tx SQLCommon, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
+	rt := Tsql.QueryResult{}
+	result, err := tx.Exec(sqlStr, param...)
+	if err != nil {
+		return rt, err
+	}
+	id, _ := result.LastInsertId()
+	affected, _ := result.RowsAffected()
+	rt.Data = make([]map[string][]ref.Val, 1)
+	rt.Data[0] = make(map[string][]ref.Val)
+	rt.Data[0]["sql.insert"] = []ref.Val{ref.NewVal(id)}
+	rt.Data[0]["sql.update"] = []ref.Val{ref.NewVal(affected)}
+	return rt, nil
+}
 
 func NewSqlTpl(t *template.Template, funcName string, DB *sql.DB) *SqlTpl {
 	return &SqlTpl{t: t, funcName: funcName, db: DB}
 }
-func (s SqlTpl) Query(tx *sql.Tx, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
+func (s SqlTpl) Query(tx SQLCommon, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
 	var (
 		rows *sql.Rows
 		err  error
@@ -42,7 +68,7 @@ func (s SqlTpl) Query(tx *sql.Tx, sqlStr string, param ...interface{}) (Tsql.Que
 	}
 	return rows2maps(rows)
 }
-func (s SqlTpl) Exec(tx *sql.Tx, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
+func (s SqlTpl) Exec(tx SQLCommon, sqlStr string, param ...interface{}) (Tsql.QueryResult, error) {
 	var (
 		err    error
 		result sql.Result

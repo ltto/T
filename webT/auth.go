@@ -1,4 +1,4 @@
-package echoT
+package webT
 
 import (
 	"net/http"

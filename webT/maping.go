@@ -1,4 +1,4 @@
-package echoT
+package webT
 
 import (
 	"github.com/labstack/echo/v4"
@@ -18,7 +18,7 @@ func AddMiddleware(m ...echo.MiddlewareFunc) {
 }
 
 func Run(address string) error {
-	server := swagger()
+	server := swagger("/")
 	g.GET("swagger/*", func(c echo.Context) error {
 		return server.Http(c.Request(), c.Response())
 	})

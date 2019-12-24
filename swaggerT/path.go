@@ -124,7 +124,7 @@ func (p Path) initBody(m map[string]reflect.Type) spec.Parameter {
 		}
 	}
 	key := NewKey(reflect.TypeOf(struct{}{}), InterfaceMap{})
-	key.K = p.URL + "__" + p.Method
+	key.K = p.URL + "_" + p.Method
 	SchemaMap.Set(key, &schema)
 	ref := SchemaMap.getRef(key)
 	if ref == nil {
@@ -138,7 +138,7 @@ func (p Path) initBody(m map[string]reflect.Type) spec.Parameter {
 
 func (p Path) GetResponse() *spec.Response {
 	props := spec.Response{}
-	props.Description = "描述"
+	props.Description = "Response"
 	if p.Out != nil {
 		ref := SchemaMap.getRef(NewKey(*p.Out, p.InterfaceMap))
 		schema := ref
