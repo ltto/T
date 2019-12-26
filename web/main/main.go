@@ -12,7 +12,6 @@ import (
 func main() {
 
 	web.R(web.RouterInfo{Mapping: "/user/:id", HttpMethod: http.MethodGet,
-		Auth: false,
 		Doc: web.RouterDoc{
 			Desc:  "简介",
 			Title: "获取用户",
