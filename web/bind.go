@@ -1,4 +1,4 @@
-package webT
+package web
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package webT
+package web
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 var RouterMap = make(map[string]*RouterInfo, 0)
 
 type InterfaceMap map[string]interface{}
+type Tags []string
 type RouterDoc struct {
 	Title string
 	Desc  string
@@ -22,14 +23,8 @@ type RouterInfo struct {
 	HttpMethod   string
 	InterfaceMap InterfaceMap
 	Do           interface{}
-	Auth         bool
 	f            *Func
 	rout         bool
-}
-
-func (r *RouterInfo) DoAuth() RouterInfo {
-	r.Auth = true
-	return *r
 }
 
 func R(r RouterInfo) RouterInfo {

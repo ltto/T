@@ -5,20 +5,20 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ltto/T/webT"
-	"github.com/ltto/T/webT/vo"
+	"github.com/ltto/T/web"
+	"github.com/ltto/T/web/vo"
 )
 
 func main() {
 
-	webT.R(webT.RouterInfo{Mapping: "/user/:id", HttpMethod: http.MethodGet,
+	web.R(web.RouterInfo{Mapping: "/user/:id", HttpMethod: http.MethodGet,
 		Auth: false,
-		Doc: webT.RouterDoc{
+		Doc: web.RouterDoc{
 			Desc:  "简介",
 			Title: "获取用户",
 			Tags:  []string{"user"},
 		},
-		InterfaceMap: webT.InterfaceMap{"data": User{}},
+		InterfaceMap: web.InterfaceMap{"data": User{}},
 		Do: func(res struct {
 			Name123 string `query:"name123"`
 			ID      string `path:"id"`
@@ -29,7 +29,7 @@ func main() {
 		},
 	})
 
-	fmt.Println(webT.Run(":8080"))
+	fmt.Println(web.Run(":8080"))
 }
 
 type User struct {
