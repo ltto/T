@@ -16,7 +16,7 @@ import (
 
 func MainLoad() {
 	doc := etree.NewDocument()
-	if err := doc.ReadFromFile("/Users/ltt/go/src/github.com/ltto/GoMybatis/Mappppper/mapper/AlbumsMapper.xml"); err != nil {
+	if err := doc.ReadFromFile("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml"); err != nil {
 		panic(err)
 	}
 	element := doc.SelectElement("mapper")
@@ -29,8 +29,8 @@ func MainLoad() {
 	fmt.Println()
 	fmt.Println(pare)
 	fmt.Println()
-	PareSQL(m2, pare)
-	fmt.Println()
+	sql := PareSQL(m2, pare)
+	fmt.Println(sql)
 }
 
 func deep(root *etree.Element, list []*etree.Element) map[string][]*etree.Element {

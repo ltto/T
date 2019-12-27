@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://raw.githubusercontent.com/ltto/GoMybatis/master/mybatis-3-mapper.dtd">
+<mapper>
+    <resultMap id="BaseResultMap" tables="biz_user_address">
+        <id column="cid" property="Cid" langType="int"/>
+        <result column="userID" property="UserID" langType="int"/>
+        <result column="name" property="Name" langType="string"/>
+        <result column="URL" property="URL" langType="string"/>
+        <result column="createdAt" property="CreatedAt" langType="time.Time"/>
+        <result column="updatedAt" property="UpdatedAt" langType="time.Time"/>
+        <result column="deletedAt" property="DeletedAt" langType="time.Time"/>
+    </resultMap>
+
+    <sql id="base" lang="go">
+        `cid`, `userID`, `name`, `URL`, `createdAt`, `updatedAt`, `deletedAt`
+    </sql>
+    <!-- insert -->
+    <insert id="Save" useGeneratedKeys="true" lang="go">
+        INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name}, #{obj.URL}, #{obj.CreatedAt}, #{obj.UpdatedAt}, #{obj.DeletedAt})
+    </insert>
+    <!-- selectOne -->
+    <select id="SelectByID" lang="go" resultMap="M" resultType="T">
+        SELECT
+        <include refid="base"/>
+        FROM `albums` WhERE `cid` = #{cid}
+    </select>
+
+    <!-- update -->
+    <update id="UpdateByID" useGeneratedKeys="true" lang="go">
+        UPDATE `albums` SET `cid`=#{obj.cid}
+        <if test="obj.Cid.Valid">
+            ,`cid` = #{obj.Cid}
+            <foreach collection="s">
+                s
+            </foreach>
+        </if>
+        <if test="obj.UserID.Valid">,`userID` = #{obj.UserID}</if>
+        <if test="obj.Name.Valid">,`name` = #{obj.Name}</if>
+        <if test="obj.URL.Valid">,`URL` = #{obj.URL}</if>
+        <if test="obj.CreatedAt.Valid">,`createdAt` = #{obj.CreatedAt}</if>
+        <if test="obj.UpdatedAt.Valid">,`updatedAt` = #{obj.UpdatedAt}</if>
+        <if test="obj.DeletedAt.Valid">,`deletedAt` = #{obj.DeletedAt}</if>
+        WHERE `cid`=#{obj.cid}
+    </update>
+
+    <!--delete one-->
+    <delete id="DeleteByID" lang="go">
+        delete FROM `albums` WHERE `cid`=#{cid}
+    </delete>
+
+    <!-- delete list -->
+    <delete id="DeleteByIDs" lang="go">
+        delete FROM `albums` WHERE `cid` in
+        <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>
+    </delete>
+</mapper>
