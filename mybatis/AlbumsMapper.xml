@@ -54,4 +54,10 @@
         delete FROM `albums` WHERE `cid` in
         <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>
     </delete>
+    <select id="one">
+        <if test="obj.name=1">
+            ok
+        </if>
+        select
+    </select>
 </mapper>

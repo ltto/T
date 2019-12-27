@@ -12,8 +12,6 @@ import (
 	"github.com/ltto/T/gobox/str"
 )
 
-
-
 func MainLoad() {
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml"); err != nil {
@@ -21,9 +19,11 @@ func MainLoad() {
 	}
 	element := doc.SelectElement("mapper")
 	m := deep(element, element.ChildElements())
-	root := NewNodeRoot(m["delete"][1])
+	root := NewNodeRoot(m["select"][1])
 	m2 := map[string]interface{}{
-		"ids": []int{0, 1, 2, 3, 4, 5, 6, 7, 8},
+		"obj": map[string]interface{}{
+			"name": 1,
+		},
 	}
 	pare, _ := root.Pare(m2)
 	fmt.Println()
@@ -163,11 +163,11 @@ func (n *NodeIf) pareIF(m map[string]interface{}) (bool, error) {
 		}
 		return fmt.Sprintf("%v", str0) == fmt.Sprintf("%v", str1), nil
 	} else {
-		str, err := FindStr(m, n.Test)
+		xmlStr, err := FindStr(m, n.Test)
 		if err != nil {
 			return false, nil
 		}
-		if b, ok := str.(bool); ok {
+		if b, ok := xmlStr.(bool); ok {
 			return b, nil
 		} else {
 			return false, errors.New("bad if test not bool")
@@ -181,7 +181,7 @@ func FindStr(m map[string]interface{}, str string) (interface{}, error) {
 	count := strings.Count(s, ".")
 	for i := 0; i < count; i++ {
 		objs = append(objs, s[:strings.LastIndex(s, ".")])
-		apps = append(objs, str[strings.LastIndex(s, ".")+1:])
+		apps = append(apps, str[strings.LastIndex(s, ".")+1:])
 		s = s[:strings.LastIndex(s, ".")]
 	}
 	var app []string
@@ -194,7 +194,7 @@ func FindStr(m map[string]interface{}, str string) (interface{}, error) {
 		}
 	}
 	if inter == nil {
-		return inter, nil
+		return str, nil
 	}
 	if len(app) == 0 {
 		return inter, nil
