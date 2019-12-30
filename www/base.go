@@ -157,7 +157,7 @@ func stringHdl(c *Context, s string) {
 	}
 
 	if strings.ToLower(path.Ext(s)) == ".html" {
-		get, _ := c.Context.Get("html")
+		get := c.CParams()
 		if get == nil {
 			get = gin.H{}
 		}
