@@ -55,7 +55,7 @@
         <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>
     </delete>
     <select id="one">
-        <if test="obj.name=1">
+        <if test="obj.name=100">
             ok
         </if>
         select

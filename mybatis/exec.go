@@ -6,6 +6,7 @@ import (
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 	"github.com/ltto/T/gobox/str"
+	"github.com/ltto/T/mybatis/node"
 )
 
 type SqlExec struct {
@@ -14,8 +15,12 @@ type SqlExec struct {
 	params []interface{}
 }
 
-func PareSQL(m map[string]interface{}, strs string) (ex SqlExec) {
-	ex.SQL = str.Expand('#', strs, func(s string) string {
+func PareSQL(m map[string]interface{}, root *node.Root) (ex SqlExec, err error) {
+	pare, err := root.Pare(m)
+	if err != nil {
+		return ex, err
+	}
+	ex.SQL = str.Expand('#', pare, func(s string) string {
 		ex.params = append(ex.params, m[s])
 		return "?"
 	})
