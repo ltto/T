@@ -1,4 +1,4 @@
-package ct
+package www
 
 const (
 	SessionID = "SESSIONIDS"

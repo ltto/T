@@ -1,4 +1,4 @@
-package ct
+package www
 
 import "github.com/go-sql-driver/mysql"
 
