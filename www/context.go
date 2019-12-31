@@ -32,12 +32,12 @@ func (c *Context) AddCParam(key string, data interface{}) {
 func (c *Context) CParams() map[string]interface{} {
 	get, ok := c.Context.Get("_param")
 	if !ok {
-		return nil
+		return make(map[string]interface{})
 	}
 	if m, ok := get.(map[string]interface{}); ok {
 		return m
 	} else {
-		return nil
+		return make(map[string]interface{})
 	}
 }
 

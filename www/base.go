@@ -149,18 +149,20 @@ func stringHdl(c *Context, s string) {
 		c.File(s)
 		return
 	} else if strings.HasPrefix(s, HttpImg) {
-		s = s[len(HttpFile):]
+		s = s[len(HttpImg):]
 		c.Writer.Header().Add("Content-Type", "image/jpeg")
-		open, _ := os.Open(s[len(HttpImg):])
+		open, _ := os.Open(s)
 		_, _ = io.Copy(c.Writer, open)
+		return
+	} else if strings.HasPrefix(s, HttpHtml) {
+		s = s[len(HttpHtml):]
+		get := c.CParams()
+		c.HTML(http.StatusOK, s, get)
 		return
 	}
 
 	if strings.ToLower(path.Ext(s)) == ".html" {
 		get := c.CParams()
-		if get == nil {
-			get = gin.H{}
-		}
 		c.HTML(http.StatusOK, s, get)
 	} else {
 		paramsMap := c.CParams()
