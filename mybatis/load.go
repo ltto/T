@@ -1,6 +1,7 @@
 package mybatis
 
 import (
+	"errors"
 	"regexp"
 
 	"github.com/beevik/etree"
@@ -8,14 +9,10 @@ import (
 
 type DML struct {
 	Namespace string
-	Insert    map[string]*DMLRoot
-	Select    map[string]*DMLRoot
-	Update    map[string]*DMLRoot
-	Delete    map[string]*DMLRoot
+	Cmd       map[string]*DMLRoot
 }
 
-
-func Load(XMLPath string) (dml DML) {
+func Load(XMLPath string) (dml DML, err error) {
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(XMLPath); err != nil {
 		panic(err)
@@ -28,21 +25,34 @@ func Load(XMLPath string) (dml DML) {
 		id := v.SelectAttrValue("id", "")
 		sqlTag[id] = m["sql"][i]
 	}
-	dml.Insert = make(map[string]*DMLRoot, len(m["insert"]))
+	dml.Cmd = make(map[string]*DMLRoot, len(m["insert"])+len(m["select"])+len(m["update"])+len(m["delete"]))
 	for i := range m["insert"] {
-		dml.Insert[m["insert"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["insert"][i], &sqlTag)
+		id := m["insert"][i].SelectAttrValue("id", "")
+		if dml.Cmd[id] != nil {
+			return dml, errors.New("重复的ID:" + id)
+		}
+		dml.Cmd[id] = NewNodeRoot(m["insert"][i], &sqlTag)
 	}
-	dml.Select = make(map[string]*DMLRoot, len(m["select"]))
 	for i := range m["select"] {
-		dml.Select[m["select"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["select"][i], &sqlTag)
+		id := m["select"][i].SelectAttrValue("id", "")
+		if dml.Cmd[id] != nil {
+			return dml, errors.New("重复的ID:" + id)
+		}
+		dml.Cmd[id] = NewNodeRoot(m["select"][i], &sqlTag)
 	}
-	dml.Update = make(map[string]*DMLRoot, len(m["update"]))
 	for i := range m["update"] {
-		dml.Update[m["update"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["update"][i], &sqlTag)
+		id := m["update"][i].SelectAttrValue("id", "")
+		if dml.Cmd[id] != nil {
+			return dml, errors.New("重复的ID:" + id)
+		}
+		dml.Cmd[id] = NewNodeRoot(m["update"][i], &sqlTag)
 	}
-	dml.Delete = make(map[string]*DMLRoot, len(m["delete"]))
-	for i := range m["d"] {
-		dml.Delete[m["delete"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["delete"][i], &sqlTag)
+	for i := range m["delete"] {
+		id := m["delete"][i].SelectAttrValue("id", "")
+		if dml.Cmd[id] != nil {
+			return dml, errors.New("重复的ID:" + id)
+		}
+		dml.Cmd[id] = NewNodeRoot(m["delete"][i], &sqlTag)
 	}
 	return
 }

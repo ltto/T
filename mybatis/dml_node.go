@@ -1,6 +1,7 @@
 package mybatis
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/beevik/etree"
@@ -11,19 +12,25 @@ func NewNodeRoot(root *etree.Element, Sql *map[string]*etree.Element) *DMLRoot {
 	id := root.SelectAttrValue("id", "")
 	tag := root.Tag
 	child := node.PareChild(root.Child)
+	UseGeneratedKeys := false
+	if tag == "insert" {
+		UseGeneratedKeys, _ = strconv.ParseBool(root.SelectAttrValue("useGeneratedKeys", "false"))
+	}
 	return &DMLRoot{
-		Child: child,
-		ID:    id,
-		Tag:   tag,
-		Sql:   Sql,
+		Child:            child,
+		ID:               id,
+		Tag:              tag,
+		Sql:              Sql,
+		UseGeneratedKeys: UseGeneratedKeys,
 	}
 }
 
 type DMLRoot struct {
-	ID    string
-	Tag   string
-	Sql   *map[string]*etree.Element
-	Child []node.Node
+	ID               string
+	Tag              string
+	UseGeneratedKeys bool
+	Sql              *map[string]*etree.Element
+	Child            []node.Node
 }
 
 func (n *DMLRoot) Pare(m map[string]interface{}) (s string, err error) {

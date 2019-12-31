@@ -11,13 +11,16 @@ import (
 
 func main() {
 	var m AlbumsMapper
-	load := mybatis.Load("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml")
+	load, err := mybatis.Load("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml")
+	if err != nil {
+		panic(err)
+	}
 	open, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
-	err = load.Insert["Save"].BindFunc(&m, open)
-	if err != nil {
+
+	if err = load.BindPtr(&m, open); err != nil {
 		panic(err)
 	}
 	err = m.Save(Albums{})

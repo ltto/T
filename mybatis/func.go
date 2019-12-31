@@ -10,7 +10,7 @@ import (
 	"github.com/ltto/T/gobox/ref"
 )
 
-func (n *DMLRoot) BindFunc(ptr interface{}, tx SqlCmd) (err error) {
+func (D *DML) BindPtr(ptr interface{}, tx SqlCmd) (err error) {
 	v := reflect.ValueOf(ptr)
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -22,12 +22,12 @@ func (n *DMLRoot) BindFunc(ptr interface{}, tx SqlCmd) (err error) {
 	for i := 0; i < v.NumField(); i++ {
 		field := v.Field(i)
 		structField := t.Field(i)
-		if field.Kind() != reflect.Func ||
-			structField.Name != n.ID {
+		if field.Kind() != reflect.Func {
 			continue
 		}
+		dmlRoot := D.Cmd[structField.Name]
 		tag := structField.Tag.Get("mapperParams")
-		makeFunc, err := n.makeFunc(field.Type(), tx, tag, )
+		makeFunc, err := dmlRoot.makeFunc(field.Type(), tx, tag, )
 		if err != nil {
 			return err
 		}
@@ -71,10 +71,13 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tx SqlCmd, tagStr string) (val refle
 			bindReturn(ft, results, returnValue, err)
 			return
 		}
-		result, err = sqlExc.ExecSQL(tx)
-		if err != nil {
+
+		if result, err = sqlExc.ExecSQL(tx); err != nil {
 			bindReturn(ft, results, returnValue, err)
 			return
+		}
+		if Operate(sqlExc.SQL) == INSERT && n.UseGeneratedKeys {
+			//todo
 		}
 		if ft.NumOut() == 2 {
 			returnValue = reflect.New(ft.Out(0))
