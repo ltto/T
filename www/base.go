@@ -83,12 +83,12 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 		session := sessions.Default(c)
 		session.Options(sessions.Options{MaxAge: 60 * 60})
 		ctx := &Context{Context: c, Session: session}
-		if interErr := DoInterceptorList(ctx); interErr.isErr {
-			http.Error(c.Writer, interErr.Error(), interErr.Code)
+		if err := DoInterceptorList(ctx); err.isErr {
+			DefaultErrHandler(ctx, err)
 		}
 		do := info.Do(ctx)
 		if err := session.Save(); err != nil {
-			DefaultErrHandler.Handler(ctx, err)
+			DefaultErrHandler(ctx, err)
 			return
 		}
 		switch t := do.(type) {
@@ -122,7 +122,7 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 				c.Writer.Header().Add("Content-Type", "application/octet-stream")
 			}
 			if _, err := io.Copy(c.Writer, t); err != nil {
-				DefaultErrHandler.Handler(ctx, err)
+				DefaultErrHandler(ctx, err)
 				return
 			}
 		case string:
@@ -131,7 +131,8 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 			s := *t
 			stringHdl(ctx, s)
 		case error:
-			c.String(http.StatusInternalServerError, t.Error())
+			DefaultErrHandler(ctx, t)
+			//c.String(http.StatusInternalServerError, t.Error())
 		default:
 			c.JSON(http.StatusOK, do)
 		}
