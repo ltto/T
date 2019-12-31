@@ -6,16 +6,19 @@ import (
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 	"github.com/ltto/T/gobox/str"
-	"github.com/ltto/T/mybatis/node"
 )
 
+type SqlCmd interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
 type SqlExec struct {
 	db     *sql.DB
 	SQL    string
 	params []interface{}
 }
 
-func PareSQL(m map[string]interface{}, root *node.DMLRoot) (ex SqlExec, err error) {
+func PareSQL(m map[string]interface{}, root *DMLRoot) (ex SqlExec, err error) {
 	pare, err := root.Pare(m)
 	if err != nil {
 		return ex, err
@@ -27,7 +30,7 @@ func PareSQL(m map[string]interface{}, root *node.DMLRoot) (ex SqlExec, err erro
 	return
 }
 
-func (s SqlExec) Query(tx *sql.Tx) (Tsql.QueryResult, error) {
+func (s SqlExec) Query(tx SqlCmd) (Tsql.QueryResult, error) {
 	var (
 		rows *sql.Rows
 		err  error
@@ -42,7 +45,7 @@ func (s SqlExec) Query(tx *sql.Tx) (Tsql.QueryResult, error) {
 	}
 	return rows2maps(rows)
 }
-func (s SqlExec) Exec(tx *sql.Tx) (Tsql.QueryResult, error) {
+func (s SqlExec) Exec(tx SqlCmd) (Tsql.QueryResult, error) {
 	var (
 		err    error
 		result sql.Result
@@ -65,7 +68,7 @@ func (s SqlExec) Exec(tx *sql.Tx) (Tsql.QueryResult, error) {
 	return rt, nil
 }
 
-func (s SqlExec) ExecSQL(tx *sql.Tx) (result Tsql.QueryResult, err error) {
+func (s SqlExec) ExecSQL(tx SqlCmd) (result Tsql.QueryResult, err error) {
 	if Operate(s.SQL) == SELECT {
 		if result, err = s.Query(tx); err != nil {
 			return result, err

@@ -1,26 +1,19 @@
 package mybatis
 
 import (
-	"fmt"
 	"regexp"
 
 	"github.com/beevik/etree"
-	"github.com/ltto/T/mybatis/node"
 )
 
 type DML struct {
 	Namespace string
-	Insert    map[string]*node.DMLRoot
-	Select    map[string]*node.DMLRoot
-	Update    map[string]*node.DMLRoot
-	Delete    map[string]*node.DMLRoot
+	Insert    map[string]*DMLRoot
+	Select    map[string]*DMLRoot
+	Update    map[string]*DMLRoot
+	Delete    map[string]*DMLRoot
 }
 
-func MainLoad() {
-	load := Load("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml")
-	sql, _ := PareSQL(map[string]interface{}{}, load.Insert["Save"])
-	fmt.Println(sql)
-}
 
 func Load(XMLPath string) (dml DML) {
 	doc := etree.NewDocument()
@@ -35,21 +28,21 @@ func Load(XMLPath string) (dml DML) {
 		id := v.SelectAttrValue("id", "")
 		sqlTag[id] = m["sql"][i]
 	}
-	dml.Insert = make(map[string]*node.DMLRoot, len(m["insert"]))
+	dml.Insert = make(map[string]*DMLRoot, len(m["insert"]))
 	for i := range m["insert"] {
-		dml.Insert[m["insert"][i].SelectAttrValue("id", "")] = node.NewNodeRoot(m["insert"][i], &sqlTag)
+		dml.Insert[m["insert"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["insert"][i], &sqlTag)
 	}
-	dml.Select = make(map[string]*node.DMLRoot, len(m["select"]))
+	dml.Select = make(map[string]*DMLRoot, len(m["select"]))
 	for i := range m["select"] {
-		dml.Select[m["select"][i].SelectAttrValue("id", "")] = node.NewNodeRoot(m["select"][i], &sqlTag)
+		dml.Select[m["select"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["select"][i], &sqlTag)
 	}
-	dml.Update = make(map[string]*node.DMLRoot, len(m["update"]))
+	dml.Update = make(map[string]*DMLRoot, len(m["update"]))
 	for i := range m["update"] {
-		dml.Update[m["update"][i].SelectAttrValue("id", "")] = node.NewNodeRoot(m["update"][i], &sqlTag)
+		dml.Update[m["update"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["update"][i], &sqlTag)
 	}
-	dml.Delete = make(map[string]*node.DMLRoot, len(m["delete"]))
+	dml.Delete = make(map[string]*DMLRoot, len(m["delete"]))
 	for i := range m["d"] {
-		dml.Delete[m["delete"][i].SelectAttrValue("id", "")] = node.NewNodeRoot(m["delete"][i], &sqlTag)
+		dml.Delete[m["delete"][i].SelectAttrValue("id", "")] = NewNodeRoot(m["delete"][i], &sqlTag)
 	}
 	return
 }
