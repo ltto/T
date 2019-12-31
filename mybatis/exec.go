@@ -15,7 +15,7 @@ type SqlExec struct {
 	params []interface{}
 }
 
-func PareSQL(m map[string]interface{}, root *node.Root) (ex SqlExec, err error) {
+func PareSQL(m map[string]interface{}, root *node.DMLRoot) (ex SqlExec, err error) {
 	pare, err := root.Pare(m)
 	if err != nil {
 		return ex, err

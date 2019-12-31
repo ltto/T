@@ -3,18 +3,18 @@ package node
 import "github.com/beevik/etree"
 
 func NewNodeInclude(es *etree.Element) *Include {
-	child := PareChild(es.Child)
 	return &Include{
-		Child: child,
-		Id:    es.SelectAttrValue("refid", ""),
+		RefId: es.SelectAttrValue("refid", ""),
 	}
 }
 
 type Include struct {
-	Child []Node
-	Id    string
+	RefId string
 }
 
 func (n *Include) Pare(m map[string]interface{}) (s string, err error) {
-	return PareNodes(m, n.Child)
+	sqlM := m["_sql"].(*map[string]*etree.Element)
+	sql := (*sqlM)[n.RefId]
+	sqlChild := PareChild(sql.Child)
+	return PareNodes(m, sqlChild)
 }
