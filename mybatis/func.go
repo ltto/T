@@ -10,7 +10,7 @@ import (
 	"github.com/ltto/T/gobox/ref"
 )
 
-func (D *DML) BindPtr(ptr interface{}, tx SqlCmd) (err error) {
+func (D *DML) BindPtr(ptr interface{}) (err error) {
 	v := reflect.ValueOf(ptr)
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -27,7 +27,9 @@ func (D *DML) BindPtr(ptr interface{}, tx SqlCmd) (err error) {
 		}
 		dmlRoot := D.Cmd[structField.Name]
 		tag := structField.Tag.Get("mapperParams")
-		makeFunc, err := dmlRoot.makeFunc(field.Type(), tx, tag, )
+		makeFunc, err := dmlRoot.makeFunc(field.Type(), tag, func() SqlCmd {
+			return D.e.GetDB()
+		})
 		if err != nil {
 			return err
 		}
@@ -36,7 +38,7 @@ func (D *DML) BindPtr(ptr interface{}, tx SqlCmd) (err error) {
 	return nil
 }
 
-func (n *DMLRoot) makeFunc(ft reflect.Type, tx SqlCmd, tagStr string) (val reflect.Value, err error) {
+func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd) (val reflect.Value, err error) {
 	if ft == nil || ft.Kind() != reflect.Func {
 		return val, errors.New("你看看你传的参数是个啥")
 	}
@@ -72,7 +74,7 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tx SqlCmd, tagStr string) (val refle
 			return
 		}
 
-		if result, err = sqlExc.ExecSQL(tx); err != nil {
+		if result, err = sqlExc.ExecSQL(db()); err != nil {
 			bindReturn(ft, results, returnValue, err)
 			return
 		}

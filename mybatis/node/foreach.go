@@ -41,13 +41,13 @@ func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	conv := m["conv"].(map[string]string)
+	temp := m["_temp"].(map[string]string)
 	switch v.Kind() {
 	case reflect.Slice:
 		for i := 0; i < v.Cap(); i++ {
-			conv[n.Index] = fmt.Sprint(i)
+			temp[n.Index] = fmt.Sprint(i)
 			m[n.Index] = i
-			conv[n.Item] = fmt.Sprintf("#{%s.%d}", n.Collection, i)
+			temp[n.Item] = fmt.Sprintf("#{%s.%d}", n.Collection, i)
 			m[fmt.Sprintf("%s.%d", n.Collection, i)] = v.Index(i).Interface()
 
 			if ps, err := PareNodes(m, n.Child); err != nil {

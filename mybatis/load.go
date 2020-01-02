@@ -8,11 +8,18 @@ import (
 )
 
 type DML struct {
-	Namespace string
-	Cmd       map[string]*DMLRoot
+	e   Engine
+	Cmd map[string]*DMLRoot
 }
 
-func Load(XMLPath string) (dml DML, err error) {
+func (e Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {
+	load, err := e.Load(XMLPath)
+	if err != nil {
+		return err
+	}
+	return load.BindPtr(ptr)
+}
+func (e Engine) Load(XMLPath string) (dml DML, err error) {
 	doc := etree.NewDocument()
 	if err := doc.ReadFromFile(XMLPath); err != nil {
 		panic(err)
@@ -25,35 +32,42 @@ func Load(XMLPath string) (dml DML, err error) {
 		id := v.SelectAttrValue("id", "")
 		sqlTag[id] = m["sql"][i]
 	}
+
 	dml.Cmd = make(map[string]*DMLRoot, len(m["insert"])+len(m["select"])+len(m["update"])+len(m["delete"]))
 	for i := range m["insert"] {
 		id := m["insert"][i].SelectAttrValue("id", "")
 		if dml.Cmd[id] != nil {
-			return dml, errors.New("重复的ID:" + id)
+			err = errors.New("重复的ID:" + id)
+			return
 		}
 		dml.Cmd[id] = NewNodeRoot(m["insert"][i], &sqlTag)
 	}
 	for i := range m["select"] {
 		id := m["select"][i].SelectAttrValue("id", "")
 		if dml.Cmd[id] != nil {
-			return dml, errors.New("重复的ID:" + id)
+			err = errors.New("重复的ID:" + id)
+			return
 		}
 		dml.Cmd[id] = NewNodeRoot(m["select"][i], &sqlTag)
 	}
 	for i := range m["update"] {
 		id := m["update"][i].SelectAttrValue("id", "")
 		if dml.Cmd[id] != nil {
-			return dml, errors.New("重复的ID:" + id)
+			err = errors.New("重复的ID:" + id)
+			return
 		}
 		dml.Cmd[id] = NewNodeRoot(m["update"][i], &sqlTag)
 	}
 	for i := range m["delete"] {
 		id := m["delete"][i].SelectAttrValue("id", "")
 		if dml.Cmd[id] != nil {
-			return dml, errors.New("重复的ID:" + id)
+			err = errors.New("重复的ID:" + id)
+			return
 		}
 		dml.Cmd[id] = NewNodeRoot(m["delete"][i], &sqlTag)
 	}
+	dml.e = e
+	e.DmlM[XMLPath] = &dml
 	return
 }
 

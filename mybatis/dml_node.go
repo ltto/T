@@ -35,7 +35,9 @@ type DMLRoot struct {
 
 func (n *DMLRoot) Pare(m map[string]interface{}) (s string, err error) {
 	newM := m
-	newM["conv"] = map[string]string{}
+	//use temp for foreach
+	newM["_temp"] = map[string]string{}
+	//use sql for include tag
 	newM["_sql"] = n.Sql
 	nodes, err := node.PareNodes(newM, n.Child)
 	return strings.TrimSpace(nodes), err

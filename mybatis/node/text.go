@@ -16,9 +16,9 @@ type Text struct {
 }
 
 func (n *Text) Pare(m map[string]interface{}) (s string, err error) {
-	conv := m["conv"].(map[string]string)
+	temp := m["_temp"].(map[string]string)
 	expand := str.Expand('#', n.Text, func(s string) string {
-		s2, ok := conv[s]
+		s2, ok := temp[s]
 		if ok {
 			return s2
 		}

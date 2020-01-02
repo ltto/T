@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -10,20 +9,21 @@ import (
 )
 
 func main() {
+
 	var m AlbumsMapper
-	load, err := mybatis.Load("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml")
+	engine, err := mybatis.Open("mysql", "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
-	open, err := sql.Open("mysql", "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
-	if err != nil {
+	if err = engine.LoadAndBind("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml", &m); err != nil {
 		panic(err)
 	}
 
-	if err = load.BindPtr(&m, open); err != nil {
+	if err = engine.BeginTX(); err != nil {
 		panic(err)
 	}
 	err = m.Save(Albums{})
+	engine.Commit()
 	fmt.Println(err)
 }
 
