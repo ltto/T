@@ -11,7 +11,6 @@ import (
 var RouterMap = make(map[string]*RouterInfo, 0)
 
 type InterfaceMap map[string]interface{}
-type Tags []string
 type RouterDoc struct {
 	Title string
 	Desc  string

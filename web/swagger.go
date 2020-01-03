@@ -15,7 +15,7 @@ type Params struct {
 	Body  map[string]reflect.Type
 }
 
-func swagger(baseURL string, ) swaggerT.Server {
+func swagger(baseURL string) swaggerT.Server {
 	server := swaggerT.Server{
 		WWW:      "http://127.0.0.1",
 		Title:    "项目-swagger",

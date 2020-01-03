@@ -74,8 +74,8 @@ func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
 	}
 	defer func() {
 		delete(m, n.Index)
-		delete(conv, n.Index)
-		delete(conv, n.Item)
+		delete(temp, n.Index)
+		delete(temp, n.Item)
 	}()
 	return n.Open + nodes[:len(nodes)-len(n.Separator)] + n.Close, nil
 }
