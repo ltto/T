@@ -1,7 +1,5 @@
 package www
 
-import "github.com/go-sql-driver/mysql"
-
 type Result struct {
 	ErrNo  int         `json:"code"`
 	ErrMsg string      `json:"errMsg"`
@@ -25,13 +23,4 @@ func JudgeView(data interface{}, err error) *Result {
 	} else {
 		return Success(data)
 	}
-}
-
-func errHandler(err error) string {
-	if err != nil {
-		if e, ok := err.(*mysql.MySQLError); ok {
-			return e.Error()
-		}
-	}
-	return ""
 }
