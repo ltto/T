@@ -12,11 +12,9 @@ import (
 func main() {
 
 	web.R(web.RouterInfo{Mapping: "/user/:id", HttpMethod: http.MethodGet,
-		Doc: web.RouterDoc{
-			Desc:  "简介",
-			Title: "获取用户",
-			Tags:  []string{"user"},
-		},
+		Desc:         "简介",
+		Title:        "获取用户",
+		Tags:         []string{"user"},
 		InterfaceMap: web.InterfaceMap{"data": User{}},
 		Do: func(res struct {
 			Name123 string `query:"name123"`

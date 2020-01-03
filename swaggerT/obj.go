@@ -21,6 +21,17 @@ var TypeMap = map[string]reflect.Type{
 	"time.Time":   reflect.TypeOf(time.Now()),
 }
 
+type Router interface {
+	GetMapping() string
+	GetHttpMethod() string
+	GetTitle() string
+	GetDesc() string
+	GetTags() []string
+	GetInterfaceMap() map[string]interface{}
+	GetIn() *reflect.Type
+	GetOut() *reflect.Type
+}
+
 type Server struct {
 	WWW      string
 	Host     string
@@ -31,6 +42,67 @@ type Server struct {
 	Version  string
 	Paths    []Path
 	doc      []byte
+}
+
+func (s *Server) SwaggerMap(RouterMap map[string]Router) {
+	var routerList = make([]Router, 0, len(RouterMap))
+	for k := range RouterMap {
+		routerList = append(routerList, RouterMap[k])
+	}
+	s.SwaggerList(routerList...)
+}
+
+func (s *Server) SwaggerList(RouterList ...Router) {
+	reg, err := regexp.Compile(":([a-z|A-Z|0-9]*)")
+	if err != nil {
+		panic(err)
+	}
+	var paths []Path
+	var AllTags = make(map[string]struct{})
+	for _, v := range RouterList {
+		params := Params{}
+		if v.GetIn() != nil {
+			params.Scanner(*v.GetIn())
+		}
+		tags := v.GetTags()
+		if len(tags) == 0 {
+			tags = []string{"base"}
+		}
+		for i := range tags {
+			AllTags[tags[i]] = struct{}{}
+		}
+		TMap := make(map[string]reflect.Type)
+		for k, v := range v.GetInterfaceMap() {
+			if v == nil {
+				panic("GetInterfaceMap val is nil")
+			}
+			vt := reflect.TypeOf(v)
+			for vt.Kind() == reflect.Ptr {
+				vt = vt.Elem()
+			}
+			TMap[k] = vt
+		}
+		mapping := reg.ReplaceAllStringFunc(v.GetMapping(), func(s string) string {
+			return fmt.Sprintf("{%s}", s[1:])
+		})
+		paths = append(paths, Path{
+			Tags:         tags,
+			Desc:         v.GetDesc(),
+			Title:        v.GetTitle(),
+			URL:          s.BasePath + mapping,
+			Method:       v.GetHttpMethod(),
+			Out:          v.GetOut(),
+			Params:       params,
+			InterfaceMap: TMap,
+		})
+	}
+	tagsArr := make([]string, 0, len(AllTags))
+	for k := range AllTags {
+		tagsArr = append(tagsArr, k)
+	}
+	s.Paths = paths
+	s.Tags = tagsArr
+	s.Init()
 }
 
 func (s *Server) Init() {

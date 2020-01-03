@@ -24,7 +24,7 @@ func (t TplEngine) makeFunc(typ reflect.Type, tpl *SqlTpl, tag, outTag string) r
 		panic("NumOut 1 or 2 ")
 	}
 	if typ.Out(numOut-1).String() != "error" {
-		panic("last Out need error ")
+		panic("last GetOut need error ")
 	}
 	tags := strings.Split(tag, ",")
 	if len(tags) == 1 && tags[0] == "" {

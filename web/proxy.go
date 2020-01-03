@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -11,19 +12,54 @@ import (
 var RouterMap = make(map[string]*RouterInfo, 0)
 
 type InterfaceMap map[string]interface{}
-type RouterDoc struct {
-	Title string
-	Desc  string
-	Tags  []string
-}
 type RouterInfo struct {
-	Doc          RouterDoc
+	Title        string
+	Desc         string
+	Tags         []string
 	Mapping      string
 	HttpMethod   string
 	InterfaceMap InterfaceMap
 	Do           interface{}
 	f            *Func
 	rout         bool
+}
+
+func (r *RouterInfo) GetMapping() string {
+	return r.Mapping
+}
+
+func (r *RouterInfo) GetHttpMethod() string {
+	return r.HttpMethod
+}
+
+func (r *RouterInfo) GetTitle() string {
+	return r.Title
+}
+
+func (r *RouterInfo) GetDesc() string {
+	return r.Desc
+}
+
+func (r *RouterInfo) GetTags() []string {
+	return r.Tags
+}
+
+func (r *RouterInfo) GetInterfaceMap() map[string]interface{} {
+	return r.InterfaceMap
+}
+
+func (r *RouterInfo) GetIn() *reflect.Type {
+	if r.f != nil {
+		return r.f.in
+	}
+	return nil
+}
+
+func (r *RouterInfo) GetOut() *reflect.Type {
+	if r.f != nil {
+		return r.f.out
+	}
+	return nil
 }
 
 func R(r RouterInfo) RouterInfo {
@@ -53,7 +89,7 @@ func (r *RouterInfo) Router() RouterInfo {
 	}
 	r.Mapping = strings.TrimLeft(r.Mapping, "/")
 	if _, ok := RouterMap[r.Mapping+r.HttpMethod]; ok {
-		panic(fmt.Sprintf("重复的路由配置 `/%s.%s`", r.Mapping, r.HttpMethod))
+		panic(fmt.Sprintf("重复的路由配置 `/%s__%s`", r.Mapping, r.HttpMethod))
 	}
 	r.f = NewFunc(r.Do)
 	RouterMap[r.Mapping+r.HttpMethod] = r

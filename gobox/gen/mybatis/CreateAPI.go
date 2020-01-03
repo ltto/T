@@ -73,8 +73,8 @@ import (
 
 var line = "//******************${structName}******************//\n"
 var One = "//${structName} get one\n" +
-	"echoT.R(echoT.RouterInfo{Mapping: \"/${struct}\", HttpMethod: http.MethodGet,\n" +
-	"	InterfaceMap: echoT.InterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
+	"echoT.R(echoT.RouterInfo{GetMapping: \"/${struct}\", GetHttpMethod: http.MethodGet,\n" +
+	"	GetInterfaceMap: echoT.GetInterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
 	"	Do: func(c echo.Context, res struct{ ID int `query:\"${PRI}\"` }) vo.Result {\n" +
 	"	if one, err := ${structName}MP.SelectByID(res.ID); err != nil {\n" +
 	"		return *vo.Err(err)\n" +
@@ -85,8 +85,8 @@ var One = "//${structName} get one\n" +
 	"})\n"
 
 var List = "//${structName} get list\n" +
-	"echoT.R(echoT.RouterInfo{Mapping: \"/${struct}s\", HttpMethod: http.MethodGet,\n" +
-	"	InterfaceMap: echoT.InterfaceMap{\"data\": reflect.TypeOf([]${structName}{})},\n" +
+	"echoT.R(echoT.RouterInfo{GetMapping: \"/${struct}s\", GetHttpMethod: http.MethodGet,\n" +
+	"	GetInterfaceMap: echoT.GetInterfaceMap{\"data\": reflect.TypeOf([]${structName}{})},\n" +
 	"	Do: func(c echo.Context, res *vo.Page) vo.Result {\n" +
 	"	list, err := ${structName}MP.SelectLimit(res.Limit())\n" +
 	"	if err != nil {\n" +
@@ -101,8 +101,8 @@ var List = "//${structName} get list\n" +
 	"	},\n" +
 	"})\n"
 var Save = "//${structName} save\n" +
-	"echoT.R(echoT.RouterInfo{Mapping: \"/${struct}/save\", HttpMethod: http.MethodPost,\n" +
-	"	InterfaceMap: echoT.InterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
+	"echoT.R(echoT.RouterInfo{GetMapping: \"/${struct}/save\", GetHttpMethod: http.MethodPost,\n" +
+	"	GetInterfaceMap: echoT.GetInterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
 	"	Do: func(c echo.Context, res ${structName}) vo.Result {\n" +
 	"	if err := ${structName}MP.Save(res); err != nil {\n" +
 	"		return *vo.Err(err)\n" +
@@ -111,9 +111,9 @@ var Save = "//${structName} save\n" +
 	"	},\n" +
 	"})\n"
 var Update = "//${structName} update\n" +
-	"echoT.R(echoT.RouterInfo{Mapping: \"/${struct}\", HttpMethod: http.MethodPost,\n" +
+	"echoT.R(echoT.RouterInfo{GetMapping: \"/${struct}\", GetHttpMethod: http.MethodPost,\n" +
 	"	Auth:         false,\n" +
-	"	InterfaceMap: echoT.InterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
+	"	GetInterfaceMap: echoT.GetInterfaceMap{\"data\": reflect.TypeOf(${structName}{})},\n" +
 	"	Do: func(c echo.Context, res ${structName}) vo.Result {\n" +
 	"	if err := ${structName}MP.UpdateByID(res); err != nil {\n" +
 	"		return *vo.Err(err)\n" +
