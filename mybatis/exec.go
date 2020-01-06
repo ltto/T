@@ -2,6 +2,7 @@ package mybatis
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
@@ -69,6 +70,7 @@ func (s SqlExec) Exec(tx SqlCmd) (Tsql.QueryResult, error) {
 }
 
 func (s SqlExec) ExecSQL(tx SqlCmd) (result Tsql.QueryResult, err error) {
+	fmt.Println("SQLCmd:::", s.SQL, s.params)
 	if Operate(s.SQL) == SELECT {
 		if result, err = s.Query(tx); err != nil {
 			return result, err

@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	var m AlbumsMapper
 	engine, err := mybatis.Open("mysql", "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
 	if err != nil {
@@ -22,9 +21,8 @@ func main() {
 	if err = engine.BeginTX(); err != nil {
 		panic(err)
 	}
-	err = m.Save(Albums{})
-	engine.Commit()
-	fmt.Println(err)
+	fmt.Println(m.Save(Albums{}))
+	fmt.Println(engine.Commit())
 }
 
 type AlbumsMapper struct {
@@ -34,6 +32,7 @@ type AlbumsMapper struct {
 	DeleteByID  func(id int) error              `mapperParams:"cid"`
 	DeleteByIDs func(ids []int) error           `mapperParams:"ids"`
 }
+
 type Albums struct {
 	Cid       null.Int    `json:"cid"`
 	UserID    null.Int    `json:"userID"`
