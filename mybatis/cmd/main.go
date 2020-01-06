@@ -6,6 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/guregu/null"
 	"github.com/ltto/T/mybatis"
+	"github.com/ltto/T/tp"
 )
 
 func main() {
@@ -14,7 +15,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err = engine.LoadAndBind("/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml", &m); err != nil {
+	if err = engine.LoadAndBindMap(tp.H{
+		"/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml": &m,
+	}); err != nil {
 		panic(err)
 	}
 

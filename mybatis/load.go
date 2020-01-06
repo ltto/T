@@ -5,11 +5,21 @@ import (
 	"regexp"
 
 	"github.com/beevik/etree"
+	"github.com/ltto/T/tp"
 )
 
 type DML struct {
 	e   Engine
 	Cmd map[string]*DMLRoot
+}
+
+func (e Engine) LoadAndBindMap(m tp.H) (err error) {
+	for k, v := range m {
+		if err = e.LoadAndBind(k, v); err != nil {
+			return err
+		}
+	}
+	return err
 }
 
 func (e Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {

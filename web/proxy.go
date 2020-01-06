@@ -7,18 +7,18 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ltto/T/tp"
 )
 
 var RouterMap = make(map[string]*RouterInfo, 0)
 
-type H map[string]interface{}
 type RouterInfo struct {
 	Title        string
 	Desc         string
 	Tags         []string
 	Mapping      string
 	HttpMethod   string
-	InterfaceMap H
+	InterfaceMap tp.H
 	Do           interface{}
 	f            *Func
 	rout         bool
