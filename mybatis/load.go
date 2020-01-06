@@ -21,8 +21,8 @@ func (e Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {
 }
 func (e Engine) Load(XMLPath string) (dml DML, err error) {
 	doc := etree.NewDocument()
-	if err := doc.ReadFromFile(XMLPath); err != nil {
-		panic(err)
+	if err = doc.ReadFromFile(XMLPath); err != nil {
+		return
 	}
 	element := doc.SelectElement("mapper")
 	m := findSQLTPL(element, element.ChildElements())
