@@ -15,11 +15,11 @@ func main() {
 		Desc:         "简介",
 		Title:        "获取用户",
 		Tags:         []string{"user"},
-		InterfaceMap: web.InterfaceMap{"data": User{}},
+		InterfaceMap: web.H{"data": User{}},
 		Do: func(res struct {
 			Name123 string `query:"name123"`
 			ID      string `path:"id"`
-			//User
+			User
 		}, c *gin.Context) vo.Result {
 			fmt.Println(res)
 			return vo.Result{}

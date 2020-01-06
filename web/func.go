@@ -11,7 +11,7 @@ type Func struct {
 	ctx          int
 	ginCtx       bool
 	out          *reflect.Type
-	InterfaceMap InterfaceMap
+	InterfaceMap H
 	outLen       int
 	outErr       bool
 	v            reflect.Value

@@ -11,14 +11,14 @@ import (
 
 var RouterMap = make(map[string]*RouterInfo, 0)
 
-type InterfaceMap map[string]interface{}
+type H map[string]interface{}
 type RouterInfo struct {
 	Title        string
 	Desc         string
 	Tags         []string
 	Mapping      string
 	HttpMethod   string
-	InterfaceMap InterfaceMap
+	InterfaceMap H
 	Do           interface{}
 	f            *Func
 	rout         bool
