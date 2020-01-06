@@ -107,15 +107,13 @@ func bindReturn(ft reflect.Type, results []reflect.Value, result reflect.Value, 
 	case 1:
 		results[0] = reflect.New(ft.Out(0)).Elem()
 		if e != nil {
-			results[0].Elem().Set(reflect.ValueOf(e))
-			results[0] = results[0].Elem()
+			results[0].Set(reflect.ValueOf(e))
 		}
 	case 2:
 		results[0] = result
 		results[1] = reflect.New(ft.Out(1)).Elem()
 		if e != nil {
-			results[1].Elem().Set(reflect.ValueOf(e))
-			results[1] = results[1].Elem()
+			results[1].Set(reflect.ValueOf(e))
 		} else {
 			results[1] = reflect.Zero(ft.Out(1))
 		}
