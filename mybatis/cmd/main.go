@@ -10,21 +10,22 @@ import (
 )
 
 func main() {
-	var m AlbumsMapper
+	var albumsMapper AlbumsMapper
 	engine, err := mybatis.Open("mysql", "root@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
-	if err = engine.LoadAndBindMap(tp.H{
-		"/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml": &m,
-	}); err != nil {
+	if err = engine.LoadAndBindMap(
+		tp.H{"/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml": &albumsMapper},
+	); err != nil {
 		panic(err)
 	}
 
 	if err = engine.BeginTX(); err != nil {
 		panic(err)
 	}
-	fmt.Println(m.Save(Albums{}))
+	fmt.Println(albumsMapper.Save(Albums{}))
+
 	fmt.Println(engine.Commit())
 }
 

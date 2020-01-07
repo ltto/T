@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ltto/T/tp"
 	"github.com/ltto/T/web"
 	"github.com/ltto/T/web/vo"
 )
@@ -15,7 +16,7 @@ func main() {
 		Desc:         "简介",
 		Title:        "获取用户",
 		Tags:         []string{"user"},
-		InterfaceMap: web.H{"data": User{}},
+		InterfaceMap: tp.H{"data": User{}},
 		Do: func(res struct {
 			Name123 string `query:"name123"`
 			ID      string `path:"id"`
