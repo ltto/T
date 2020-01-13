@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ltto/T/swaggerT"
 	"github.com/ltto/T/tp"
 	"github.com/ltto/T/web"
 	"github.com/ltto/T/web/vo"
@@ -27,7 +28,15 @@ func main() {
 		},
 	})
 
-	fmt.Println(web.Run(":8080"))
+	server := swaggerT.Server{
+		WWW:      "http://127.0.0.1",
+		Title:    "项目-swagger",
+		Desc:     "项目描述",
+		BasePath: "/",
+		Host:     "127.0.0.1:8080",
+		Version:  "1.0",
+	}
+	fmt.Println(web.Run(":8080", &server))
 }
 
 type User struct {

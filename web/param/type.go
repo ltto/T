@@ -1,27 +1,5 @@
 package param
 
-type TT string
-
-//integer
-//number
-//boolean
-//string
-//array
-//object
-
-type FMT string
-
-//binary
-//byte
-//date
-//date-time
-//double
-//email
-//float
-//int32
-//int64
-//uuid
-
 type Param struct {
 	//base
 	Type   string `json:"type,omitempty"`

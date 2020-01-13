@@ -1,6 +1,8 @@
 package web
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ltto/T/swaggerT"
 )
@@ -11,22 +13,22 @@ var g = e.Group("/")
 func init() {
 }
 
-func Run(address string) error {
-	server := swaggerT.Server{
-		WWW:      "http://127.0.0.1",
-		Title:    "项目-swagger",
-		Desc:     "项目描述",
-		BasePath: "/",
-		Host:     "127.0.0.1:8080",
-		Version:  "1.0",
+type Docer interface {
+	Http(r *http.Request, w http.ResponseWriter) error
+	Init(map[string]*RouterInfo)
+}
+
+func Run(address string, server *swaggerT.Server) error {
+	if server != nil {
+		var routerList = make([]swaggerT.Router, 0, len(RouterMap))
+		for k := range RouterMap {
+			routerList = append(routerList, RouterMap[k])
+		}
+		server.SwaggerList(routerList...)
+		g.GET("swagger/:path", func(c *gin.Context) {
+			server.Http(c.Request, c.Writer)
+		})
 	}
-	var routerList = make([]swaggerT.Router, 0, len(RouterMap))
-	for k := range RouterMap {
-		routerList = append(routerList, RouterMap[k])
-	}
-	server.SwaggerList(routerList...)
-	g.GET("swagger/:path", func(c *gin.Context) {
-		server.Http(c.Request, c.Writer)
-	})
+
 	return e.Run(address)
 }

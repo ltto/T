@@ -10,7 +10,18 @@ import (
 	"github.com/ltto/T/tp"
 )
 
-var RouterMap = make(map[string]*RouterInfo, 0)
+var RouterMap = make(map[string]Router, 0)
+
+type Router interface {
+	GetMapping() string
+	GetHttpMethod() string
+	GetTitle() string
+	GetDesc() string
+	GetTags() []string
+	GetInterfaceMap() map[string]interface{}
+	GetIn() *reflect.Type
+	GetOut() *reflect.Type
+}
 
 type RouterInfo struct {
 	Title        string
