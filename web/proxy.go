@@ -62,9 +62,8 @@ func (r *RouterInfo) GetOut() *reflect.Type {
 	return nil
 }
 
-func R(r RouterInfo) RouterInfo {
-	r.Router()
-	return r
+func R(r *RouterInfo) *RouterInfo {
+	return r.Router()
 }
 func GetMapping(Mapping string, Do interface{}) *RouterInfo {
 	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodGet, Do: Do}
@@ -83,9 +82,9 @@ func PutMapping(Mapping string, Do interface{}) *RouterInfo {
 	return r
 }
 
-func (r *RouterInfo) Router() RouterInfo {
+func (r *RouterInfo) Router() *RouterInfo {
 	if r.rout {
-		return *r
+		return r
 	}
 	r.Mapping = strings.TrimLeft(r.Mapping, "/")
 	if _, ok := RouterMap[r.Mapping+r.HttpMethod]; ok {
@@ -111,5 +110,5 @@ func (r *RouterInfo) Router() RouterInfo {
 	case http.MethodDelete:
 		g.DELETE(r.Mapping, han, )
 	}
-	return *r
+	return r
 }
