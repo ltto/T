@@ -62,7 +62,7 @@ func (r *RouterInfo) GetOut() *reflect.Type {
 	return nil
 }
 
-func R(r *RouterInfo) *RouterInfo {
+func R(r RouterInfo) *RouterInfo {
 	return r.Router()
 }
 func GetMapping(Mapping string, Do interface{}) *RouterInfo {
