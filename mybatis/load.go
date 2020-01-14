@@ -9,11 +9,11 @@ import (
 )
 
 type DML struct {
-	e   Engine
+	e   *Engine
 	Cmd map[string]*DMLRoot
 }
 
-func (e Engine) LoadAndBindMap(m tp.H) (err error) {
+func (e *Engine) LoadAndBindMap(m tp.H) (err error) {
 	for k, v := range m {
 		if err = e.LoadAndBind(k, v); err != nil {
 			return err
@@ -22,14 +22,14 @@ func (e Engine) LoadAndBindMap(m tp.H) (err error) {
 	return err
 }
 
-func (e Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {
+func (e *Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {
 	load, err := e.Load(XMLPath)
 	if err != nil {
 		return err
 	}
 	return load.BindPtr(ptr)
 }
-func (e Engine) Load(XMLPath string) (dml DML, err error) {
+func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 	doc := etree.NewDocument()
 	if err = doc.ReadFromFile(XMLPath); err != nil {
 		return

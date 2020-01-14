@@ -11,7 +11,7 @@ var txs map[int64]*sql.Tx
 func init() {
 	txs = make(map[int64]*sql.Tx)
 }
-func (e Engine) BeginTX() error {
+func (e *Engine) BeginTX() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
 		return nil
@@ -24,7 +24,7 @@ func (e Engine) BeginTX() error {
 	return nil
 }
 
-func (e Engine)Rollback() error {
+func (e *Engine)Rollback() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
 		return txs[gid].Rollback()
@@ -32,7 +32,7 @@ func (e Engine)Rollback() error {
 	return nil
 }
 
-func (e Engine)Commit() error {
+func (e *Engine)Commit() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
 		return txs[gid].Commit()

@@ -120,6 +120,10 @@ func (r *RouterInfo) Router() *RouterInfo {
 		g.PUT(r.Mapping, han, )
 	case http.MethodDelete:
 		g.DELETE(r.Mapping, han, )
+	case http.MethodHead:
+		g.HEAD(r.Mapping, han, )
+	case http.MethodOptions:
+		g.OPTIONS(r.Mapping, han, )
 	}
 	return r
 }

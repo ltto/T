@@ -11,12 +11,16 @@ type Engine struct {
 	DmlM map[string]*DML
 }
 
-func (e Engine) GetDB() SqlCmd {
+func (e *Engine) GetDB() SqlCmd {
 	tx := txs[utils.GetGID()]
 	if tx != nil {
 		return tx
 	}
 	return e.DB
+}
+func NewDB(db *sql.DB) *Engine {
+	engine := Engine{DB: db, DmlM: make(map[string]*DML)}
+	return &engine
 }
 
 func Open(driverName, dataSourceName string) (*Engine, error) {
@@ -24,6 +28,5 @@ func Open(driverName, dataSourceName string) (*Engine, error) {
 	if err != nil {
 		return nil, err
 	}
-	engine := Engine{DB: DB, DmlM: make(map[string]*DML)}
-	return &engine, nil
+	return NewDB(DB), nil
 }
