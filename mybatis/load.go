@@ -43,42 +43,36 @@ func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 		sqlTag[id] = m["sql"][i]
 	}
 
-	dml.Cmd = make(map[string]*DMLRoot, len(m["insert"])+len(m["select"])+len(m["update"])+len(m["delete"]))
-	for i := range m["insert"] {
-		id := m["insert"][i].SelectAttrValue("id", "")
-		if dml.Cmd[id] != nil {
-			err = errors.New("重复的ID:" + id)
-			return
-		}
-		dml.Cmd[id] = NewNodeRoot(m["insert"][i], &sqlTag)
+	if err = loadDml(m, "insert", &dml, sqlTag); err != nil {
+		return
 	}
-	for i := range m["select"] {
-		id := m["select"][i].SelectAttrValue("id", "")
-		if dml.Cmd[id] != nil {
-			err = errors.New("重复的ID:" + id)
-			return
-		}
-		dml.Cmd[id] = NewNodeRoot(m["select"][i], &sqlTag)
+	if err = loadDml(m, "select", &dml, sqlTag); err != nil {
+		return
 	}
-	for i := range m["update"] {
-		id := m["update"][i].SelectAttrValue("id", "")
-		if dml.Cmd[id] != nil {
-			err = errors.New("重复的ID:" + id)
-			return
-		}
-		dml.Cmd[id] = NewNodeRoot(m["update"][i], &sqlTag)
+	if err = loadDml(m, "update", &dml, sqlTag); err != nil {
+		return
 	}
-	for i := range m["delete"] {
-		id := m["delete"][i].SelectAttrValue("id", "")
-		if dml.Cmd[id] != nil {
-			err = errors.New("重复的ID:" + id)
-			return
-		}
-		dml.Cmd[id] = NewNodeRoot(m["delete"][i], &sqlTag)
+	if err = loadDml(m, "delete", &dml, sqlTag); err != nil {
+		return
 	}
 	dml.e = e
 	e.DmlM[XMLPath] = &dml
 	return
+}
+
+func loadDml(m map[string][]*etree.Element, key string, dml *DML, sqlTag map[string]*etree.Element) (err error) {
+	elements := m[key]
+	for i := range elements {
+		id := elements[i].SelectAttrValue("id", "")
+		if dml.Cmd[id] != nil {
+			return errors.New("重复的ID:" + id)
+		}
+		if dml.Cmd == nil {
+			dml.Cmd = make(map[string]*DMLRoot, 0)
+		}
+		dml.Cmd[id] = NewNodeRoot(elements[i], &sqlTag)
+	}
+	return nil
 }
 
 func findSQLTPL(root *etree.Element, list []*etree.Element) map[string][]*etree.Element {
