@@ -42,21 +42,27 @@ func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 		id := v.SelectAttrValue("id", "")
 		sqlTag[id] = m["sql"][i]
 	}
-
-	if err = loadDml(m, "insert", &dml, sqlTag); err != nil {
-		return
-	}
-	if err = loadDml(m, "select", &dml, sqlTag); err != nil {
-		return
-	}
-	if err = loadDml(m, "update", &dml, sqlTag); err != nil {
-		return
-	}
-	if err = loadDml(m, "delete", &dml, sqlTag); err != nil {
+	if err = loadDMLS(m, &dml, sqlTag); err != nil {
 		return
 	}
 	dml.e = e
 	e.DmlM[XMLPath] = &dml
+	return
+}
+
+func loadDMLS(m map[string][]*etree.Element, dml *DML, sqlTag map[string]*etree.Element) (err error) {
+	if err = loadDml(m, "insert", dml, sqlTag); err != nil {
+		return
+	}
+	if err = loadDml(m, "select", dml, sqlTag); err != nil {
+		return
+	}
+	if err = loadDml(m, "update", dml, sqlTag); err != nil {
+		return
+	}
+	if err = loadDml(m, "delete", dml, sqlTag); err != nil {
+		return
+	}
 	return
 }
 

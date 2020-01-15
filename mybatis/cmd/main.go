@@ -15,9 +15,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err = engine.LoadAndBindMap(
-		tp.H{"/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml": &albumsMapper},
-	); err != nil {
+	if err = engine.LoadAndBindMap(tp.H{
+		"/Users/ltt/go/src/github.com/ltto/T/mybatis/AlbumsMapper.xml": &albumsMapper,
+	}); err != nil {
 		panic(err)
 	}
 
