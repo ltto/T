@@ -24,7 +24,7 @@ func (e *Engine) BeginTX() error {
 	return nil
 }
 
-func (e *Engine)Rollback() error {
+func (e *Engine) Rollback() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
 		return txs[gid].Rollback()
@@ -32,7 +32,7 @@ func (e *Engine)Rollback() error {
 	return nil
 }
 
-func (e *Engine)Commit() error {
+func (e *Engine) Commit() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
 		return txs[gid].Commit()
