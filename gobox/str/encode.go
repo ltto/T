@@ -8,6 +8,6 @@ import (
 
 func MD5(str string) string {
 	w := md5.New()
-	io.WriteString(w, str)
+	_, _ = io.WriteString(w, str)
 	return fmt.Sprintf("%x", w.Sum(nil))
 }

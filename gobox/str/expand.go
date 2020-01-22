@@ -2,7 +2,7 @@ package str
 
 func Expand(start rune, s string, mapping func(string) string) string {
 	var buf []byte
-	// ${} is all ASCII, so bytes are fine for this operation.
+	// `start{}` is all ASCII, so bytes are fine for this operation.
 	i := 0
 	for j := 0; j < len(s); j++ {
 		if s[j] == uint8(start) && j+1 < len(s) {

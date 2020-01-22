@@ -2,7 +2,7 @@ package str
 
 import "strings"
 
-func toUp(s string) string {
+func ToUp(s string) string {
 	newStr := ""
 	Up := false
 	for _, v := range s {
