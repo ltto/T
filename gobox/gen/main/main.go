@@ -3,21 +3,21 @@ package main
 import (
 	"database/sql"
 	"fmt"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
-	"github.com/ltto/T/gobox/gen/gorm"
+	"github.com/ltto/T/gobox/gen"
+	"regexp"
 )
 
 func main() {
 	e := echo.New()
-	e.File("/", "gobox/gen/gorm/index.html")
+	e.File("/", "gobox/gen/index.html")
 	e.POST("/db2struct", func(c echo.Context) error {
-		param := new(gorm.Param)
+		param := new(gen.Param)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
-		result, err := gorm.ScanTable(param)
+		result, err := gen.ScanTable(param)
 		if err != nil {
 			return err
 		}
@@ -25,8 +25,15 @@ func main() {
 	})
 
 	e.POST("/tables", func(c echo.Context) error {
-		param := new(gorm.Param)
+		param := new(gen.Param)
 		if err := c.Bind(param); err != nil {
+			return err
+		}
+		if param.Regexp == "" {
+			param.Regexp=".*"
+		}
+		compile, err := regexp.Compile(param.Regexp)
+		if err != nil {
 			return err
 		}
 		if !(param.Password == "") {
@@ -53,7 +60,9 @@ func main() {
 			if err := rows.Scan(&tab); err != nil {
 				return err
 			}
-			tables = append(tables, tab)
+			if compile.Match([]byte(tab)) {
+				tables = append(tables, tab)
+			}
 		}
 		return c.JSON(200, tables)
 	})

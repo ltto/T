@@ -49,16 +49,16 @@
         </td>
     </tr>
     <tr>
-        <td colspan="3">
-            <div id="tab">
-            </div>
+        <td>
+            regexp:<input type="text" id="regexp" value=".*">
+            <button onclick="run()">Scan Tables</button>
+            <button onclick="f()">Generate code</button>
         </td>
     </tr>
     <tr>
-        <td>
-            <!--<button onclick="run()">Test Connection</button>-->
-            <button onclick="run()">Scan Tables</button>
-            <button onclick="f()">Generate code</button>
+        <td colspan="3">
+            <div id="tab">
+            </div>
         </td>
     </tr>
 </table>
@@ -75,6 +75,7 @@
             "port": $("#port").val(),
             "password": $("#password").val(),
             "database": $("#database").val(),
+            "regexp": $("#regexp").val(),
             "package": $("#package").val(),
         }, function (data) {
             $("#tab").html("<h3>Table to Struct</h3>")
@@ -107,7 +108,7 @@
             "database": $("#database").val(),
             "package": $("#package").val(),
             "table_2_struct": obj,
-        }
+        };
         $.ajax({
             type: "POST",
             url: "/db2struct",
