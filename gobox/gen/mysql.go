@@ -37,7 +37,6 @@ func (t Type) Field() (fuc FieldFuc) {
 	} else {
 		fuc := m[strings.ToUpper(t.Name)]
 		return fuc
-
 	}
 }
 
@@ -47,17 +46,17 @@ func (t *Type) Scan(src interface{}) (err error) {
 		return nil
 	}
 	s := string(uint8s)
-	contains := strings.Contains(s, "unsigned")
-	if contains {
+	index := strings.Index(s, " unsigned")
+	if index > 0 {
 		t.Unsigned = true
+		s = s[:len(s)-len(" unsigned")]
 	}
-	s = strings.TrimRight(s, " unsigned")
 	b := strings.Index(s, "(")
 	e := strings.Index(s, ")")
 	if b != -1 {
 		t.Name = s[:b]
 		t.Len, _ = strconv.Atoi(s[b+1 : e])
-	}else {
+	} else {
 		t.Name = s
 	}
 	return nil
