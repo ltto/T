@@ -76,47 +76,48 @@ var u = map[string]FieldFuc{
 type FieldFuc func(DescTab) jen.Code
 
 var jsonType = str.Underline
+var fieldType = str.ToCamel
 
 var gormType = func(d DescTab) string {
 	return "column:" + d.Field
 }
 
 func Int8(d DescTab) jen.Code {
-	return jen.Id(d.Field).Int8().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Int8().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Int16(d DescTab) jen.Code {
-	return jen.Id(d.Field).Int16().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Int16().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Int32(d DescTab) jen.Code {
-	return jen.Id(d.Field).Int32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Int32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Int64(d DescTab) jen.Code {
-	return jen.Id(d.Field).Int64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Int64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Uint8(d DescTab) jen.Code {
-	return jen.Id(d.Field).Uint8().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Uint8().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Uint16(d DescTab) jen.Code {
-	return jen.Id(d.Field).Uint16().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Uint16().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Uint32(d DescTab) jen.Code {
-	return jen.Id(d.Field).Uint32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Uint32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Uint64(d DescTab) jen.Code {
-	return jen.Id(d.Field).Uint64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Uint64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Float32(d DescTab) jen.Code {
-	return jen.Id(d.Field).Float32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Float32().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Float64(d DescTab) jen.Code {
-	return jen.Id(d.Field).Float64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Float64().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func String(d DescTab) jen.Code {
-	return jen.Id(d.Field).String().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).String().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Time(d DescTab) jen.Code {
-	return jen.Id(d.Field).Qual("time", "Time").Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Qual("time", "Time").Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }
 func Interface(d DescTab) jen.Code {
-	return jen.Id(d.Field).Interface().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
+	return jen.Id(fieldType(d.Field)).Interface().Tag(map[string]string{"json": jsonType(d.Field), "gorm": gormType(d)})
 }

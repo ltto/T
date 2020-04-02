@@ -54,8 +54,12 @@ func (t *Type) Scan(src interface{}) (err error) {
 	s = strings.TrimRight(s, " unsigned")
 	b := strings.Index(s, "(")
 	e := strings.Index(s, ")")
-	t.Name = s[:b]
-	t.Len, _ = strconv.Atoi(s[b+1 : e])
+	if b != -1 {
+		t.Name = s[:b]
+		t.Len, _ = strconv.Atoi(s[b+1 : e])
+	}else {
+		t.Name = s
+	}
 	return nil
 }
 
