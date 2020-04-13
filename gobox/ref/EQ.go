@@ -22,8 +22,16 @@ func IsFloat(kind reflect.Kind) bool {
 	return kind == reflect.Float32 || kind == reflect.Float64
 }
 
+func IsNumber(kind reflect.Kind) bool {
+	return IsUint(kind) || IsInt(kind) || IsFloat(kind)
+}
+
+func IsString(kind reflect.Kind) bool {
+	return kind == reflect.String
+}
+
 func IsBase(kind reflect.Kind) bool {
-	return IsIntUint(kind) || IsBool(kind) || IsFloat(kind) || kind == reflect.String
+	return IsIntUint(kind) || IsBool(kind) || IsFloat(kind) || IsString(kind)
 }
 
 func IsTime(t reflect.Type) bool {

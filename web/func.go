@@ -1,6 +1,7 @@
 package web
 
 import (
+	"github.com/gin-gonic/gin"
 	"reflect"
 )
 
@@ -11,7 +12,7 @@ type Func struct {
 	ctx          int
 	ginCtx       bool
 	out          *reflect.Type
-	InterfaceMap H
+	InterfaceMap gin.H
 	outLen       int
 	outErr       bool
 	v            reflect.Value
