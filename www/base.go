@@ -96,31 +96,7 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 			defer t.Close()
 			c.Writer.Header().Add("Content-Disposition", "attachment; filename="+filepath.Base(t.Name()))
 			ext := filepath.Ext(t.Name())
-			switch ext {
-			case ".jpg", ".JPG",
-				".jpe", ".JPE",
-				".jpeg", ".JPEG",
-				".jfif", ".JFIF":
-				c.Writer.Header().Add("Content-Type", "image/jpeg")
-			case ".gif", ".GIF":
-				c.Writer.Header().Add("Content-Type", "image/gif")
-			case ".png", ".PNG":
-				c.Writer.Header().Add("Content-Type", "image/png")
-			case ".fax", ".FAX":
-				c.Writer.Header().Add("Content-Type", "image/fax")
-			case ".tif", ".TIF", ".tiff", ".TIFF":
-				c.Writer.Header().Add("Content-Type", "image/tiff")
-			case ".ico", ".ICO":
-				c.Writer.Header().Add("Content-Type", "image/x-icon")
-			case ".net", ".NET":
-				c.Writer.Header().Add("Content-Type", "image/pnetvue")
-			case ".rp", ".RP":
-				c.Writer.Header().Add("Content-Type", "image/vnd.rn-realpix")
-			case ".wbmp", ".WBMP":
-				c.Writer.Header().Add("Content-Type", "image/vnd.wap.wbmp")
-			default:
-				c.Writer.Header().Add("Content-Type", "application/octet-stream")
-			}
+			c.Writer.Header().Add("Content-Type", ContentType(ext))
 			if _, err := io.Copy(c.Writer, t); err != nil {
 				DefaultErrHandler(ctx, err)
 				return
@@ -132,7 +108,6 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 			stringHdl(ctx, s)
 		case error:
 			DefaultErrHandler(ctx, t)
-			//c.String(http.StatusInternalServerError, t.Error())
 		default:
 			c.JSON(http.StatusOK, do)
 		}
