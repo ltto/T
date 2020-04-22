@@ -1,12 +1,17 @@
 package www
 
 const (
-	HttpRedirect = "redirect:"
-	HttpFile     = "file:"
-	HttpImg      = "img:"
-	HttpHtml = "html:"
+	httpRedirect = "redirect:"
+	httpFile     = "file:"
+	httpHtml     = "html:"
 )
 
-type ReturnRedirect string
-type ReturnFile string
-type ReturnImg string
+func ReturnRedirect(path string) string {
+	return httpRedirect + path
+}
+func ReturnFile(path string) string {
+	return httpFile + path
+}
+func ReturnHtml(path string) string {
+	return httpHtml + path
+}

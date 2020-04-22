@@ -108,6 +108,7 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 			stringHdl(ctx, s)
 		case error:
 			DefaultErrHandler(ctx, t)
+		case nil:
 		default:
 			c.JSON(http.StatusOK, do)
 		}
@@ -115,28 +116,33 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 }
 
 func stringHdl(c *Context, s string) {
-	if strings.HasPrefix(s, HttpRedirect) {
-		c.Redirect(http.StatusMovedPermanently, s[len(HttpRedirect):])
+	if strings.HasPrefix(s, httpRedirect) {
+		c.Redirect(http.StatusMovedPermanently, s[len(httpRedirect):])
 		return
-	} else if strings.HasPrefix(s, HttpFile) {
-		s = s[len(HttpFile)-1:]
-		c.Writer.Header().Add("Content-Disposition", "attachment; filename="+filepath.Base(s))
-		c.Writer.Header().Add("Content-Type", "application/octet-stream")
-		c.File(s)
+	} else if strings.HasPrefix(s, httpFile) {
+		s = s[len(httpFile):]
+		contentType := ContentType(filepath.Ext(s))
+		c.Writer.Header().Add("Content-Type", contentType)
+		if strings.Contains(contentType, "image") {
+			c.Writer.Header().Add("Content-Disposition", "filename="+filepath.Base(s))
+		} else {
+			c.Writer.Header().Add("Content-Disposition", "attachment;filename="+filepath.Base(s))
+		}
+		open, err := os.Open(s)
+		if err != nil {
+			DefaultErrHandler(c, err)
+		}
+		defer open.Close()
+		if _, err = io.Copy(c.Writer, open); err != nil {
+			DefaultErrHandler(c, err)
+		}
 		return
-	} else if strings.HasPrefix(s, HttpImg) {
-		s = s[len(HttpImg):]
-		c.Writer.Header().Add("Content-Type", "image/jpeg")
-		open, _ := os.Open(s)
-		_, _ = io.Copy(c.Writer, open)
-		return
-	} else if strings.HasPrefix(s, HttpHtml) {
-		s = s[len(HttpHtml):]
+	} else if strings.HasPrefix(s, httpHtml) {
+		s = s[len(httpHtml):]
 		get := c.CParams()
 		c.HTML(http.StatusOK, s, get)
 		return
 	}
-
 	if strings.ToLower(path.Ext(s)) == ".html" {
 		get := c.CParams()
 		c.HTML(http.StatusOK, s, get)
