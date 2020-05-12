@@ -71,13 +71,19 @@ type DescTab struct {
 	Extra   string      `gorm:"column:Extra"`
 }
 
-func addSource(f *jen.File, name string, d []DescTab) {
+func addSource(f *jen.File, tab, name string, d []DescTab) {
 	codes := make([]jen.Code, len(d))
 	for i := range d {
 		field := d[i].Type.Field()
 		codes[i] = field(d[i])
 	}
-	f.Type().Id(name).Struct(codes...)
+	f.Type().Id(name).Struct(codes...).Line().
+		Func().
+		Params(jen.Id(string(strings.ToLower(name)[0]) + " " + name)).
+		Id("TableName").Params().String().
+		Block(
+			jen.Return(jen.Id("\"" + tab + "\"")),
+		)
 }
 
 func ScanTable(param *Param) (result string, err error) {
@@ -100,7 +106,7 @@ func ScanTable(param *Param) (result string, err error) {
 		if err != nil {
 			return result, err
 		}
-		addSource(file, structName, tabField)
+		addSource(file, tab, structName, tabField)
 	}
 	src := fmt.Sprintf("%#v", file)
 	return src, nil

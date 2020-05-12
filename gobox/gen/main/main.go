@@ -21,7 +21,7 @@ func main() {
 		if err != nil {
 			return err
 		}
-		return c.String(200, string(result))
+		return c.String(200, result)
 	})
 
 	e.POST("/tables", func(c echo.Context) error {
