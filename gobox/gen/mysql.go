@@ -79,7 +79,7 @@ func addSource(f *jen.File, tab, name string, d []DescTab) {
 	}
 	f.Type().Id(name).Struct(codes...).Line().
 		Func().
-		Params(jen.Id(string(strings.ToLower(name)[0]) + " " + name)).
+		Params(jen.Id(string(strings.ToLower(name)[0]) + " *" + name)).
 		Id("TableName").Params().String().
 		Block(
 			jen.Return(jen.Id("\"" + tab + "\"")),
