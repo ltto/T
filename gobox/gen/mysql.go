@@ -2,10 +2,11 @@ package gen
 
 import (
 	"fmt"
-	"github.com/dave/jennifer/jen"
-	"github.com/jinzhu/gorm"
 	"strconv"
 	"strings"
+
+	"github.com/dave/jennifer/jen"
+	"github.com/jinzhu/gorm"
 )
 
 type Null bool

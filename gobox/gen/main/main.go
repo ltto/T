@@ -3,10 +3,11 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"regexp"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo"
 	"github.com/ltto/T/gobox/gen"
-	"regexp"
 )
 
 func main() {
@@ -30,7 +31,7 @@ func main() {
 			return err
 		}
 		if param.Regexp == "" {
-			param.Regexp=".*"
+			param.Regexp = ".*"
 		}
 		compile, err := regexp.Compile(param.Regexp)
 		if err != nil {

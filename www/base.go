@@ -11,6 +11,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/ltto/T/www/rest"
 )
 
 var (
@@ -26,34 +27,42 @@ func init() {
 type RouterInfo struct {
 	Mapping    string
 	HttpMethod string
-	auth       bool
 	Routes     gin.IRoutes
-	Do         func(c *Context) interface{}
+	Do         *func(c *Context) interface{}
+	Param      gin.H
 }
 
-func (r *RouterInfo) SetAuth(b bool) {
-	r.auth = b
-}
-
-func GetMapping(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodGet, Do: Do}
+func GetMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodGet, Do: &Do, Routes: routes}
 	Router(r)
 	return r
 }
-func PostMapping(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPost, Do: Do}
+func PostMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPost, Do: &Do, Routes: routes}
 	Router(r)
 	return r
 }
-func DeleteMapping(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodDelete, Do: Do}
+func DeleteMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodDelete, Do: &Do, Routes: routes}
 	Router(r)
 	return r
 }
-func PutMapping(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPut, Do: Do}
+func PutMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPut, Do: &Do, Routes: routes}
 	Router(r)
 	return r
+}
+func Get(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	return GetMapping(nil, Mapping, Do)
+}
+func Post(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	return PostMapping(nil, Mapping, Do)
+}
+func Delete(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	return DeleteMapping(nil, Mapping, Do)
+}
+func Put(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+	return PutMapping(routes, Mapping, Do)
 }
 
 func Router(info *RouterInfo) {
@@ -75,18 +84,17 @@ func Router(info *RouterInfo) {
 
 func ginFunc(info *RouterInfo) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		var (
+			session = sessions.Default(c)
+			ctx     = &Context{Context: c, Session: session}
+		)
+		session.Options(sessions.Options{MaxAge: 60 * 60})
 		c.Writer.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 		c.Writer.Header().Add("Access-Control-Allow-Headers", "*")
 		c.Writer.Header().Add("Pragma", "no-cache")
 		c.Writer.Header().Add("Expires", "0")
 		c.Set("routerInfo", info)
-		session := sessions.Default(c)
-		session.Options(sessions.Options{MaxAge: 60 * 60})
-		ctx := &Context{Context: c, Session: session}
-		if err := DoInterceptorList(ctx); err.isErr {
-			DefaultErrHandler(ctx, err)
-		}
-		do := info.Do(ctx)
+		do := (*info.Do)(ctx)
 		if err := session.Save(); err != nil {
 			DefaultErrHandler(ctx, err)
 			return
@@ -106,8 +114,20 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 		case *string:
 			s := *t
 			stringHdl(ctx, s)
+		case io.ReadCloser:
+			defer t.Close()
+			if _, err := io.Copy(c.Writer, t); err != nil {
+				DefaultErrHandler(ctx, err)
+				return
+			}
+		case io.Reader:
+			if _, err := io.Copy(c.Writer, t); err != nil {
+				DefaultErrHandler(ctx, err)
+				return
+			}
 		case error:
 			DefaultErrHandler(ctx, t)
+			return
 		case nil:
 		default:
 			c.JSON(http.StatusOK, do)
@@ -116,37 +136,32 @@ func ginFunc(info *RouterInfo) func(c *gin.Context) {
 }
 
 func stringHdl(c *Context, s string) {
-	if strings.HasPrefix(s, httpRedirect) {
-		c.Redirect(http.StatusMovedPermanently, s[len(httpRedirect):])
+	if ss, ok := rest.Redirect(s); ok {
+		c.Redirect(http.StatusMovedPermanently, ss)
 		return
-	} else if strings.HasPrefix(s, httpFile) {
-		s = s[len(httpFile):]
-		contentType := ContentType(filepath.Ext(s))
+	}
+	if ss, ok := rest.File(s); ok {
+		contentType := ContentType(filepath.Ext(ss))
 		c.Writer.Header().Add("Content-Type", contentType)
 		if strings.Contains(contentType, "image") {
 			c.Writer.Header().Add("Content-Disposition", "filename="+filepath.Base(s))
 		} else {
 			c.Writer.Header().Add("Content-Disposition", "attachment;filename="+filepath.Base(s))
 		}
-		open, err := os.Open(s)
-		if err != nil {
-			DefaultErrHandler(c, err)
-		}
-		defer open.Close()
-		if _, err = io.Copy(c.Writer, open); err != nil {
-			DefaultErrHandler(c, err)
-		}
+		http.ServeFile(c.Writer, c.Request, s)
 		return
-	} else if strings.HasPrefix(s, httpHtml) {
-		s = s[len(httpHtml):]
+	}
+	if ss, ok := rest.Html(s); ok {
 		get := c.CParams()
-		c.HTML(http.StatusOK, s, get)
+		c.HTML(http.StatusOK, ss, get)
 		return
 	}
 	if strings.ToLower(path.Ext(s)) == ".html" {
 		get := c.CParams()
 		c.HTML(http.StatusOK, s, get)
-	} else {
+		return
+	}
+	{
 		paramsMap := c.CParams()
 		params := make([]interface{}, 0, len(paramsMap))
 		for k := range paramsMap {
