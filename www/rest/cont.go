@@ -19,16 +19,22 @@ func ReturnHtml(path string) string {
 }
 func Redirect(s string) (ss string, b bool) {
 	b = strings.HasPrefix(s, httpRedirect)
-	ss = s[len(httpRedirect):]
+	if b {
+		ss = s[len(httpRedirect):]
+	}
 	return
 }
 func File(s string) (ss string, b bool) {
 	b = strings.HasPrefix(s, httpFile)
-	ss = s[len(httpFile):]
+	if b {
+		ss = s[len(httpFile):]
+	}
 	return
 }
 func Html(s string) (ss string, b bool) {
 	b = strings.HasPrefix(s, httpHtml)
-	ss = s[len(httpHtml):]
+	if b {
+		ss = s[len(httpHtml):]
+	}
 	return
 }

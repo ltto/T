@@ -1,8 +1,10 @@
 package web
 
 import (
-	"github.com/gin-gonic/gin"
+	"fmt"
 	"reflect"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Func struct {
@@ -56,15 +58,19 @@ func NewFunc(f interface{}) *Func {
 		for in.Kind() == reflect.Ptr {
 			in = in.Elem()
 		}
-		if in.String() == "Context" {
-			fff.ctx = i
-		} else if in.String() == "gin.Context" {
-			fff.ctx = i
-			fff.ginCtx = true
-		} else {
-			fff.inIn = i
-			fff.in = &in
+		fmt.Println("in.PkgPath()", in.PkgPath())
+		if in.Name() == "Context" {
+			if in.PkgPath() == "github.com/ltto/T/web" {
+				fff.ctx = i
+				continue
+			} else if in.PkgPath() == "github.com/gin-gonic/gin" {
+				fff.ctx = i
+				fff.ginCtx = true
+				continue
+			}
 		}
+		fff.inIn = i
+		fff.in = &in
 	}
 	for i := 0; i < ft.NumOut(); i++ {
 		out := ft.Out(i)
