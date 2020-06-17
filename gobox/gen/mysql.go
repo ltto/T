@@ -88,6 +88,9 @@ func addSource(f *jen.File, tab, name string, d []DescTab) {
 }
 
 func ScanTable(param *Param) (result string, err error) {
+	if !(param.Password == "") {
+		param.Password = ":" + param.Password
+	}
 	url := fmt.Sprintf("%v%v@tcp(%v:%v)/%v?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true",
 		param.User,
 		param.Password,

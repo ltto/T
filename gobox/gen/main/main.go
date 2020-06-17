@@ -12,6 +12,9 @@ import (
 
 func main() {
 	e := echo.New()
+	e.HTTPErrorHandler = func(err error, c echo.Context) {
+		c.String(500, err.Error())
+	}
 	e.File("/", "gobox/gen/index.html")
 	e.POST("/db2struct", func(c echo.Context) error {
 		param := new(gen.Param)
