@@ -3,7 +3,10 @@ module github.com/ltto/T
 go 1.13
 
 require (
-	github.com/andlabs/ui v0.0.0-20180902183112-867a9e5a498d
+	github.com/andlabs/ui v0.0.0-20180902183112-867a9e5a498d // indirect
+	github.com/asticode/go-astikit v0.8.0
+	github.com/asticode/go-astilectron v0.16.0
+	github.com/asticode/go-astilectron-bundler v0.7.0
 	github.com/beevik/etree v1.1.0
 	github.com/bndr/gotabulate v1.1.2
 	github.com/dave/jennifer v1.4.0
@@ -18,7 +21,7 @@ require (
 	github.com/guregu/null v3.4.0+incompatible
 	github.com/jinzhu/gorm v1.9.11
 	github.com/json-iterator/go v1.1.7 // indirect
-	github.com/labstack/echo v3.3.10+incompatible
+	github.com/labstack/echo v3.3.10+incompatible // indirect
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/swaggo/files v0.0.0-20190704085106-630677cd5c14
 	github.com/tealeg/xlsx v1.0.5

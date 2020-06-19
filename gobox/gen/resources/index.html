@@ -2,11 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-    <script
-            src="https://code.jquery.com/jquery-2.2.4.min.js"
-            integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-            crossorigin="anonymous"></script>
+    <title>MySQL to Golang struct</title>
+    <script>window.$ = window.jQuery = require("./jq.js");</script>
     <style>
         #src {
             width: 100%;
@@ -51,8 +48,8 @@
     <tr>
         <td>
             regexp:<input type="text" id="regexp" value=".*">
-            <button onclick="run()">Scan Tables</button>
-            <button onclick="f()">Generate code</button>
+            <button onclick="scan()">Scan Tables</button>
+            <button onclick="gen()">Generate code</button>
         </td>
     </tr>
     <tr>
@@ -65,19 +62,28 @@
 
 <textarea id="src"></textarea>
 <script>
-    function run() {
-        $.post("/tables", {
-            "json_able": $("#json_able").is(":checked"),
-            "null_able": $("#null_able").is(':checked'),
-            "gorm_able": $("#gorm_able").is(':checked'),
-            "user": $("#user").val(),
-            "host": $("#host").val(),
-            "port": $("#port").val(),
-            "password": $("#password").val(),
-            "database": $("#database").val(),
-            "regexp": $("#regexp").val(),
-            "package": $("#package").val(),
-        }, function (data) {
+    function scan() {
+        let data = {
+            f: "scan",
+            data: {
+                "json_able": $("#json_able").is(":checked"),
+                "null_able": $("#null_able").is(':checked'),
+                "gorm_able": $("#gorm_able").is(':checked'),
+                "user": $("#user").val(),
+                "host": $("#host").val(),
+                "port": $("#port").val(),
+                "password": $("#password").val(),
+                "database": $("#database").val(),
+                "regexp": $("#regexp").val(),
+                "package": $("#package").val(),
+            }
+        };
+        astilectron.sendMessage(JSON.stringify(data), function (resp) {
+            if (resp.code === -1) {
+                alert(resp.data)
+                return
+            }
+            data = resp.data
             $("#tab").html("<h3>Table to Struct</h3>")
             for (i in data) {
                 let name = data[i]
@@ -85,10 +91,10 @@
                 name = toHump(name)
                 $("#tab").append(`<input type="text" class="sqlTab" disabled value="` + data[i] + `"> to <input class="struct" type="text" value="` + name + `"> <br>`)
             }
-        })
+        });
     }
 
-    function f() {
+    function gen() {
         var obj = {}
         let sqlTab = $(".sqlTab")
         for (i in sqlTab) {
@@ -98,27 +104,27 @@
         }
 
         let data = {
-            "json_able": $("#json_able").is(":checked"),
-            "null_able": $("#null_able").is(':checked'),
-            "gorm_able": $("#gorm_able").is(':checked'),
-            "user": $("#user").val(),
-            "host": $("#host").val(),
-            "port": $("#port").val(),
-            "password": $("#password").val(),
-            "database": $("#database").val(),
-            "package": $("#package").val(),
-            "table_2_struct": obj,
-        };
-        $.ajax({
-            type: "POST",
-            url: "/db2struct",
-            contentType: "application/json;charset=utf-8",
-            data: JSON.stringify(data),
-            success: function (data) {
-                $("#src").html(data)
+            f: "gen",
+            data: {
+                "json_able": $("#json_able").is(":checked"),
+                "null_able": $("#null_able").is(':checked'),
+                "gorm_able": $("#gorm_able").is(':checked'),
+                "user": $("#user").val(),
+                "host": $("#host").val(),
+                "port": $("#port").val(),
+                "password": $("#password").val(),
+                "database": $("#database").val(),
+                "package": $("#package").val(),
+                "table_2_struct": obj,
             }
-        })
-
+        };
+        astilectron.sendMessage(JSON.stringify(data), function (resp) {
+            if (resp.code === -1) {
+                alert(resp.data)
+                return
+            }
+            $("#src").html(resp.data)
+        });
     }
 
     // 下划线转换驼峰
