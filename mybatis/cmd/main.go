@@ -27,17 +27,17 @@ func main() {
 	//albums.Name.Scan("xiaoming")
 	//fmt.Println(albums.Name.Value())
 	//fmt.Println(albumsMapper.Save(&albums))
-	//fmt.Println(engine.Commit())
+	fmt.Println(engine.Commit())
 	//fmt.Println(albums)
 	fmt.Println(albumsMapper.SelectByID(78))
 }
 
 type AlbumsMapper struct {
-	Save        func(obj *Albums) error         `mapperParams:"obj"`
+	Save        func(obj *Albums) error        `mapperParams:"obj"`
 	SelectByID  func(id int) ([]Albums, error) `mapperParams:"cid"`
-	UpdateByID  func(obj *Albums) error         `mapperParams:"obj"`
-	DeleteByID  func(id int) error              `mapperParams:"cid"`
-	DeleteByIDs func(ids []int) error           `mapperParams:"ids"`
+	UpdateByID  func(obj *Albums) error        `mapperParams:"obj"`
+	DeleteByID  func(id int) error             `mapperParams:"cid"`
+	DeleteByIDs func(ids []int) error          `mapperParams:"ids"`
 }
 
 type Albums struct {

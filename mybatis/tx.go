@@ -35,7 +35,9 @@ func (e *Engine) Rollback() error {
 func (e *Engine) Commit() error {
 	gid := utils.GetGID()
 	if txs[gid] != nil {
-		return txs[gid].Commit()
+		err := txs[gid].Commit()
+		delete(txs, gid)
+		return err
 	}
 	return nil
 }
