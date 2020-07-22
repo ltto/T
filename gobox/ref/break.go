@@ -51,7 +51,7 @@ func BreakDataVal(ptr interface{}, m map[string]interface{}, tag, gap string) {
 			inputFieldName := tag + typeField.Name
 
 			if valuer, ok := bindValuer(structField); ok {
-				value, _ := valuer.Value()
+				value, err := valuer.Value()
 				m[inputFieldName] = value
 			} else if obj, ok := breakField(structField.Type(), structField); ok {
 				m[inputFieldName] = obj
@@ -95,9 +95,8 @@ func breakField(T reflect.Type, field reflect.Value) (interface{}, bool) {
 }
 
 func bindValuer(field reflect.Value) (driver.Valuer, bool) {
-	ptr := reflect.New(field.Type())
-	if ptr.CanInterface() {
-		iface := ptr.Interface()
+	if field.CanInterface() {
+		iface := field.Interface()
 		if valuer, ok := iface.(driver.Valuer); ok {
 			return valuer, true
 		}

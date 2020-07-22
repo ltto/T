@@ -24,6 +24,8 @@ func main() {
 		panic(err)
 	}
 	albums := Albums{}
+	albums.Name.Scan("xiaoming")
+	fmt.Println(albums.Name.Value())
 	fmt.Println(albumsMapper.Save(&albums))
 	fmt.Println(engine.Commit())
 	fmt.Println(albums)
