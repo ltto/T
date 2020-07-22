@@ -116,7 +116,7 @@ func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind b
 		}
 
 		// Call this first, in case we're dealing with an alias to an array type
-		if ok, err := unmarshalField(typeField.Type.Kind(), inputValue[0], structField); ok {
+		if ok, err := UnmarshalField(typeField.Type.Kind(), inputValue[0], structField); ok {
 			if err != nil {
 				return err
 			}
@@ -151,7 +151,7 @@ func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind b
 
 func setWithProperType(valueKind reflect.Kind, val Val, structField reflect.Value) error {
 	// But also call it here, in case we're dealing with an array of BindUnmarshalers
-	if ok, err := unmarshalField(valueKind, val, structField); ok {
+	if ok, err := UnmarshalField(valueKind, val, structField); ok {
 		return err
 	}
 
@@ -192,7 +192,7 @@ func setWithProperType(valueKind reflect.Kind, val Val, structField reflect.Valu
 	return nil
 }
 
-func unmarshalField(valueKind reflect.Kind, val Val, field reflect.Value) (bool, error) {
+func UnmarshalField(valueKind reflect.Kind, val Val, field reflect.Value) (bool, error) {
 	switch valueKind {
 	case reflect.Ptr:
 		return unmarshalFieldPtr(val, field)

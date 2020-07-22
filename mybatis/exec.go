@@ -24,9 +24,13 @@ func PareSQL(m map[string]interface{}, root *DMLRoot) (ex SqlExec, err error) {
 	if err != nil {
 		return ex, err
 	}
-	ex.SQL = str.Expand('#', pare, func(s string) string {
+	ex.SQL = pare
+	ex.SQL = str.Expand('#', ex.SQL, func(s string) string {
 		ex.params = append(ex.params, m[s])
 		return "?"
+	})
+	ex.SQL = str.Expand('$', ex.SQL, func(s string) string {
+		return fmt.Sprintf("%v", m[s])
 	})
 	return
 }

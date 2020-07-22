@@ -7,7 +7,7 @@ import (
 
 func main() {
 	www.Get("/hello", func(c *www.Context) interface{} {
-		return rest.ReturnFile("www/main/rgb.png")
+		return rest.ReturnFile("/Users/liutongtong/gocode/T/www/main/rgb.png")
 	})
 
 	www.Engine.Run(":8080")

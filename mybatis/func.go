@@ -1,13 +1,13 @@
 package mybatis
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-	"reflect"
-	"strings"
-
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
+	"reflect"
+	"strings"
 )
 
 func (D *DML) BindPtr(ptr interface{}) (err error) {
@@ -78,8 +78,18 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd) (va
 			bindReturn(ft, results, returnValue, err)
 			return
 		}
-		if Operate(sqlExc.SQL) == INSERT && n.UseGeneratedKeys {
-			//todo
+		if n.UseGeneratedKeys {
+			kk := ""
+			switch Operate(sqlExc.SQL) {
+			case INSERT:
+				kk = "sql.insert"
+			case UPDATE:
+				kk = "sql.update"
+			}
+			val := result.Data[0][kk][0]
+			if err := bindKey(args, val.Data()); err != nil {
+				bindReturn(ft, results, returnValue, err)
+			}
 		}
 		if ft.NumOut() == 2 {
 			returnValue = reflect.New(ft.Out(0))
@@ -118,4 +128,58 @@ func bindReturn(ft reflect.Type, results []reflect.Value, result reflect.Value, 
 			results[1] = reflect.Zero(ft.Out(1))
 		}
 	}
+}
+func bindKey(args []reflect.Value, src interface{}) error {
+	for i := range args {
+		val := args[i]
+		if val.Kind() != reflect.Ptr {
+			return nil
+		}
+		for val.Kind() == reflect.Ptr {
+			val = val.Elem()
+		}
+		typ := val.Type()
+		if typ.Kind() != reflect.Struct {
+			return nil
+		}
+		fields := ref.Fields(typ)
+		for _, fieldT := range fields {
+			structField := val.FieldByName(fieldT.Name)
+			for structField.Kind() == reflect.Ptr {
+				structField = structField.Elem()
+			}
+			if structField.Kind() == reflect.Invalid || !structField.CanInterface() {
+				continue
+			}
+			split := strings.Split(fieldT.Tag.Get("json"), ",")
+			key := false
+			for i := range split {
+				if key = split[i] == "primary_key"; key {
+					break
+				}
+			}
+			if key {
+				scanner, ok := structField.Addr().Interface().(sql.Scanner)
+				if ok {
+					return scanner.Scan(src)
+				}
+				_, err := ref.UnmarshalField(structField.Kind(), ref.NewVal(src), structField)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+	}
+	return nil
+}
+func IsValuer(v reflect.Value) bool {
+	defer func() { recover() }()
+	t := v.MethodByName("Value").Type()
+	return t.NumOut() == 2 && t.Out(0).String() == "driver.Value" && t.Out(1).String() == "error"
+}
+func IsScanner(v reflect.Value) bool {
+	defer func() { recover() }()
+	t := v.MethodByName("Scan").Type()
+	return t.NumOut() == 1 && t.Out(0).String() == "error" && t.NumIn() == 1 && t.In(0).String() == "interface"
 }

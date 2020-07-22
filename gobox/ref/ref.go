@@ -93,3 +93,27 @@ func FullName(t reflect.Type) string {
 	}
 	return t.PkgPath() + "_" + t.String()
 }
+func PrtType(t reflect.Type) reflect.Type {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return t
+}
+func PrtValue(val reflect.Value) reflect.Value {
+	for val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	return val
+}
+func Fields(t reflect.Type) (list []reflect.StructField) {
+	t = PrtType(t)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		if field.Anonymous {
+			list = append(list, Fields(field.Type)...)
+		} else {
+			list = append(list, field)
+		}
+	}
+	return
+}

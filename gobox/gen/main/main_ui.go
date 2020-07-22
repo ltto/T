@@ -19,15 +19,22 @@ import (
 )
 
 type L struct {
-	Deep int
+	Deep  int
+	Close bool
 }
 
 func (l L) Print(v ...interface{}) {
+	if l.Close {
+		return
+	}
 	space := l.deep()
 	var vv = []interface{}{space}
 	fmt.Println(append(vv, v...)...)
 }
 func (l L) Printf(format string, v ...interface{}) {
+	if l.Close {
+		return
+	}
 	space := l.deep()
 	fmt.Printf(space+" "+format+"\n", v...)
 }
@@ -51,7 +58,7 @@ func (l L) deep() string {
 func main() {
 	// Set logger
 	//l := log.New(log.Writer(), log.Prefix(), log.Flags()|log.Llongfile)
-	l := L{Deep: 5}
+	l := L{Deep: 5, Close: true}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
