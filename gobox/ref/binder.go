@@ -13,8 +13,8 @@ type BindUnmarshaler interface {
 	UnmarshalParam(param string) error
 }
 
-func BindDataStr(ptr interface{}, data map[string][]string, tag string, noTagBind bool) error {
-	return BindDataVal(ptr, Str2Val(data), tag, noTagBind)
+func BindDataStr(ptr interface{}, data map[string][]string, tag string) error {
+	return BindDataVal(ptr, Str2Val(data), tag)
 }
 func Str2Val(data map[string][]string) map[string][]Val {
 	maps := make(map[string][]Val)
@@ -28,13 +28,9 @@ func Str2Val(data map[string][]string) map[string][]Val {
 	return maps
 }
 
-func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind bool) error {
-	typ := reflect.TypeOf(ptr)
-	val := reflect.ValueOf(ptr)
-	for typ.Kind() == reflect.Ptr {
-		typ = typ.Elem()
-		val = val.Elem()
-	}
+func BindDataVal(ptr interface{}, data map[string][]Val, tag string) error {
+	typ := PrtType(reflect.TypeOf(ptr))
+	val := PrtValue(reflect.ValueOf(ptr))
 
 	if typ.Kind() != reflect.Struct &&
 		!(typ.Kind() == reflect.Map &&
@@ -82,13 +78,13 @@ func BindDataVal(ptr interface{}, data map[string][]Val, tag string, noTagBind b
 			continue
 		}
 		structFieldKind := structField.Kind()
-		inputFieldName := typeField.Tag.Get(tag)
+		inputFieldName := strings.Split(typeField.Tag.Get(tag), ";")[0]
 
-		if inputFieldName == "" && noTagBind {
+		if inputFieldName == "" {
 			inputFieldName = typeField.Name
 			// If tag is nil, we inspect if the field is a struct.
 			if _, ok := bindUnmarshaler(structField); !ok && (structFieldKind == reflect.Struct) {
-				if err := BindDataVal(structField.Addr().Interface(), data, tag, noTagBind); err != nil {
+				if err := BindDataVal(structField.Addr().Interface(), data, tag); err != nil {
 					return err
 				}
 				continue

@@ -151,7 +151,7 @@ func bindKey(args []reflect.Value, src interface{}) error {
 			if structField.Kind() == reflect.Invalid || !structField.CanInterface() {
 				continue
 			}
-			split := strings.Split(fieldT.Tag.Get("json"), ",")
+			split := strings.Split(fieldT.Tag.Get("json"), ";")
 			key := false
 			for i := range split {
 				if key = split[i] == "primary_key"; key {
