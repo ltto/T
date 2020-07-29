@@ -14,8 +14,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	if err = engine.LoadAndBindMap(tp.H{
-		"/Users/liutongtong/gocode/T/mybatis/AlbumsMapper.xml": &albumsMapper,
+	if err = engine.LoadAndBindMap(&mybatis.LoadConf{
+		PathPrefix: "/Users/liutongtong/gocode/T/mybatis",
+		Tag:        "json",
+	}, tp.H{
+		"AlbumsMapper.xml": &albumsMapper,
 	}); err != nil {
 		panic(err)
 	}

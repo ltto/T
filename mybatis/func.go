@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func (D *DML) BindPtr(ptr interface{}) (err error) {
+func (D *DML) BindPtr(ptr interface{}, conf *LoadConf) (err error) {
 	v := reflect.ValueOf(ptr)
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -29,7 +29,7 @@ func (D *DML) BindPtr(ptr interface{}) (err error) {
 		tag := structField.Tag.Get("mapperParams")
 		makeFunc, err := dmlRoot.makeFunc(field.Type(), tag, func() SqlCmd {
 			return D.e.GetDB()
-		})
+		}, conf)
 		if err != nil {
 			return err
 		}
@@ -38,22 +38,22 @@ func (D *DML) BindPtr(ptr interface{}) (err error) {
 	return nil
 }
 
-func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd) (val reflect.Value, err error) {
+func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, conf *LoadConf) (val reflect.Value, err error) {
 	if ft == nil || ft.Kind() != reflect.Func {
 		return val, errors.New("你看看你传的参数是个啥")
 	}
 	if ft.NumOut() > 2 {
-		return val, errors.New("return need 1 or 2")
+		return val, errors.New("the max return is 2")
 	}
 	if ft.Out(ft.NumOut()-1).String() != "error" {
-		return val, errors.New("last return need `error`")
+		return val, errors.New("the last return must's `error`")
 	}
 	tags := strings.Split(tagStr, ",")
 	if len(tags) == 1 && tags[0] == "" {
 		tags = tags[0:0]
 	}
 	if len(tags) != ft.NumIn() {
-		return val, errors.New(fmt.Sprintf("func need %v but fund %d in", tags, ft.NumIn()))
+		return val, errors.New(fmt.Sprintf("func params len(%v) but fund(%d)", tags, ft.NumIn()))
 	}
 	return reflect.MakeFunc(ft, func(args []reflect.Value) (results []reflect.Value) {
 		var (
@@ -87,7 +87,11 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd) (va
 				kk = "sql.update"
 			}
 			val := result.Data[0][kk][0]
-			if err := bindKey(args, val.Data()); err != nil {
+			var tag = "json"
+			if conf != nil && conf.Tag != "" {
+				tag = conf.Tag
+			}
+			if err := bindKey(args, val.Data(), tag); err != nil {
 				bindReturn(ft, results, returnValue, err)
 			}
 		}
@@ -129,7 +133,7 @@ func bindReturn(ft reflect.Type, results []reflect.Value, result reflect.Value, 
 		}
 	}
 }
-func bindKey(args []reflect.Value, src interface{}) error {
+func bindKey(args []reflect.Value, src interface{}, tag string) error {
 	for i := range args {
 		val := args[i]
 		if val.Kind() != reflect.Ptr {

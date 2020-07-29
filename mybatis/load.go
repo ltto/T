@@ -2,6 +2,7 @@ package mybatis
 
 import (
 	"errors"
+	"path"
 	"regexp"
 
 	"github.com/beevik/etree"
@@ -12,22 +13,29 @@ type DML struct {
 	e   *Engine
 	Cmd map[string]*DMLRoot
 }
+type LoadConf struct {
+	Tag        string
+	PathPrefix string
+}
 
-func (e *Engine) LoadAndBindMap(m tp.H) (err error) {
+func (e *Engine) LoadAndBindMap(conf *LoadConf, m tp.H) (err error) {
 	for k, v := range m {
-		if err = e.LoadAndBind(k, v); err != nil {
+		if conf != nil && conf.PathPrefix != "" {
+			k = path.Join(conf.PathPrefix, k)
+		}
+		if err = e.LoadAndBind(k, v, conf); err != nil {
 			return err
 		}
 	}
 	return err
 }
 
-func (e *Engine) LoadAndBind(XMLPath string, ptr interface{}) (err error) {
+func (e *Engine) LoadAndBind(XMLPath string, ptr interface{}, conf *LoadConf) (err error) {
 	load, err := e.Load(XMLPath)
 	if err != nil {
 		return err
 	}
-	return load.BindPtr(ptr)
+	return load.BindPtr(ptr, conf)
 }
 func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 	doc := etree.NewDocument()
