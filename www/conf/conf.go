@@ -2,6 +2,7 @@ package conf
 
 import (
 	"encoding/json"
+	"flag"
 	"os"
 )
 
@@ -10,7 +11,8 @@ var (
 )
 
 func init() {
-	open, err := os.Open("conf.json")
+	s := flag.String("c", "conf.json", "config file")
+	open, err := os.Open(*s)
 	if err != nil {
 		panic(err)
 	}
