@@ -28,40 +28,40 @@ type RouterInfo struct {
 	Mapping    string
 	HttpMethod string
 	Routes     gin.IRoutes
-	Do         *func(c *Context) interface{}
-	Param      gin.H
+	Do         interface{}
+	f          *Func
 }
 
-func GetMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodGet, Do: &Do, Routes: routes}
+func GetMapping(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodGet, Do: Do, Routes: routes}
 	Router(r)
 	return r
 }
-func PostMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPost, Do: &Do, Routes: routes}
+func PostMapping(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPost, Do: Do, Routes: routes}
 	Router(r)
 	return r
 }
-func DeleteMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodDelete, Do: &Do, Routes: routes}
+func DeleteMapping(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodDelete, Do: Do, Routes: routes}
 	Router(r)
 	return r
 }
-func PutMapping(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
-	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPut, Do: &Do, Routes: routes}
+func PutMapping(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
+	r := &RouterInfo{Mapping: Mapping, HttpMethod: http.MethodPut, Do: Do, Routes: routes}
 	Router(r)
 	return r
 }
-func Get(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+func Get(Mapping string, Do interface{}) *RouterInfo {
 	return GetMapping(nil, Mapping, Do)
 }
-func Post(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+func Post(Mapping string, Do interface{}) *RouterInfo {
 	return PostMapping(nil, Mapping, Do)
 }
-func Delete(Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+func Delete(Mapping string, Do interface{}) *RouterInfo {
 	return DeleteMapping(nil, Mapping, Do)
 }
-func Put(routes gin.IRoutes, Mapping string, Do func(c *Context) interface{}) *RouterInfo {
+func Put(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
 	return PutMapping(routes, Mapping, Do)
 }
 
@@ -72,29 +72,36 @@ func Router(info *RouterInfo) {
 	}
 	switch info.HttpMethod {
 	case http.MethodGet:
-		info.Routes.GET(pathMap, ginFunc(info))
+		info.Routes.GET(pathMap, info.ginFunc())
 	case http.MethodPost:
-		info.Routes.POST(pathMap, ginFunc(info))
+		info.Routes.POST(pathMap, info.ginFunc())
 	case http.MethodPut:
-		info.Routes.PUT(pathMap, ginFunc(info))
+		info.Routes.PUT(pathMap, info.ginFunc())
 	case http.MethodDelete:
-		info.Routes.DELETE(pathMap, ginFunc(info))
+		info.Routes.DELETE(pathMap, info.ginFunc())
 	}
 }
 
-func ginFunc(info *RouterInfo) func(c *gin.Context) {
+func (info *RouterInfo) ginFunc() func(c *gin.Context) {
+	info.f = NewFunc(info.Do)
 	return func(c *gin.Context) {
 		var (
 			session = sessions.Default(c)
 			ctx     = &Context{Context: c, Session: session}
+			do      interface{}
+			err     error
 		)
 		session.Options(sessions.Options{MaxAge: 60 * 60})
+
 		c.Writer.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
 		c.Writer.Header().Add("Access-Control-Allow-Headers", "*")
 		c.Writer.Header().Add("Pragma", "no-cache")
 		c.Writer.Header().Add("Expires", "0")
 		c.Set("routerInfo", info)
-		do := (*info.Do)(ctx)
+
+		if do, err = info.f.Call(ctx); err != nil {
+			DefaultErrHandler(ctx, err)
+		}
 		if err := session.Save(); err != nil {
 			DefaultErrHandler(ctx, err)
 			return
