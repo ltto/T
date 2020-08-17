@@ -24,14 +24,14 @@ func (b *MyBinder) Bind(i interface{}, c *Context) (err error) {
 	for _, v := range paramNames {
 		paths[v] = []string{c.Param(v)}
 	}
-	if err = ref.BindDataStr(i, paths, "path", false); err != nil {
+	if err = ref.BindDataStr(i, paths, "path"); err != nil {
 		return NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	req := c.Request
 	if req.ContentLength == 0 {
 		if req.Method == http.MethodGet || req.Method == http.MethodDelete {
-			if err = ref.BindDataStr(i, c.Request.URL.Query(), "query", true); err != nil {
+			if err = ref.BindDataStr(i, c.Request.URL.Query(), "query"); err != nil {
 				return NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 			return
@@ -61,7 +61,7 @@ func (b *MyBinder) Bind(i interface{}, c *Context) (err error) {
 		}
 	case strings.HasPrefix(ctype, gin.MIMEPOSTForm), strings.HasPrefix(ctype, gin.MIMEMultipartPOSTForm):
 		params := c.Request.PostForm
-		if err = ref.BindDataStr(i, params, "form", true); err != nil {
+		if err = ref.BindDataStr(i, params, "form"); err != nil {
 			return NewHTTPError(http.StatusBadRequest, err.Error())
 		}
 	default:
