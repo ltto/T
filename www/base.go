@@ -143,12 +143,13 @@ func (info *RouterInfo) ginFunc() func(c *gin.Context) {
 }
 
 func stringHdl(c *Context, s string) {
+	var org = s
 	if ss, ok := rest.Redirect(s); ok {
 		c.Redirect(http.StatusMovedPermanently, ss)
 		return
 	}
 	var ok bool
-	if s, ok = rest.File(s); ok {
+	if s, ok = rest.File(org); ok {
 		contentType := ContentType(filepath.Ext(s))
 		c.Writer.Header().Add("Content-Type", contentType)
 		if strings.Contains(contentType, "image") {
@@ -159,14 +160,14 @@ func stringHdl(c *Context, s string) {
 		http.ServeFile(c.Writer, c.Request, s)
 		return
 	}
-	if s, ok = rest.Html(s); ok {
+	if s, ok = rest.Html(org); ok {
 		get := c.CParams()
 		c.HTML(http.StatusOK, s, get)
 		return
 	}
-	if strings.ToLower(path.Ext(s)) == ".html" {
+	if strings.ToLower(path.Ext(org)) == ".html" {
 		get := c.CParams()
-		c.HTML(http.StatusOK, s, get)
+		c.HTML(http.StatusOK, org, get)
 		return
 	}
 	{
@@ -175,6 +176,6 @@ func stringHdl(c *Context, s string) {
 		for k := range paramsMap {
 			params = append(params, paramsMap[k])
 		}
-		c.String(http.StatusOK, s, params...)
+		c.String(http.StatusOK, org, params...)
 	}
 }
