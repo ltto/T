@@ -140,8 +140,9 @@ func stringHdl(c *Context, s string) {
 		c.Redirect(http.StatusMovedPermanently, ss)
 		return
 	}
-	if ss, ok := rest.File(s); ok {
-		contentType := ContentType(filepath.Ext(ss))
+	var ok bool
+	if s, ok = rest.File(s); ok {
+		contentType := ContentType(filepath.Ext(s))
 		c.Writer.Header().Add("Content-Type", contentType)
 		if strings.Contains(contentType, "image") {
 			c.Writer.Header().Add("Content-Disposition", "filename="+filepath.Base(s))
@@ -151,9 +152,9 @@ func stringHdl(c *Context, s string) {
 		http.ServeFile(c.Writer, c.Request, s)
 		return
 	}
-	if ss, ok := rest.Html(s); ok {
+	if s, ok = rest.Html(s); ok {
 		get := c.CParams()
-		c.HTML(http.StatusOK, ss, get)
+		c.HTML(http.StatusOK, s, get)
 		return
 	}
 	if strings.ToLower(path.Ext(s)) == ".html" {
