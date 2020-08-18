@@ -1,6 +1,7 @@
 package www
 
 import (
+	"github.com/ltto/T/www/conf"
 	"io"
 	"net/http"
 	"os"
@@ -23,6 +24,11 @@ func init() {
 	store := cookie.NewStore([]byte("secret"))
 	Engine.Use(sessions.Sessions(SessionID, store))
 }
+func Run() error {
+	Engine.Static(conf.Conf.GetStaticPath(), conf.Conf.GetStaticLocal())
+	return Engine.Run(conf.Conf.Server.HostPort)
+}
+
 
 type RouterInfo struct {
 	Mapping    string
@@ -66,7 +72,7 @@ func Put(routes gin.IRoutes, Mapping string, Do interface{}) *RouterInfo {
 }
 
 func Router(info *RouterInfo) {
-	pathMap := path.Clean(info.Mapping)
+	pathMap := path.Join(conf.Conf.Server.Base, info.Mapping)
 	if info.Routes == nil {
 		info.Routes = Engine
 	}

@@ -10,5 +10,5 @@ func main() {
 		return rest.ReturnFile("/Users/liutongtong/gocode/T/www/main/rgb.png")
 	})
 
-	www.Engine.Run(":8080")
+	www.Run()
 }
