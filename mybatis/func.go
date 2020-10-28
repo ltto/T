@@ -7,9 +7,9 @@ import (
 	"github.com/ltto/T/gobox/ref"
 	"github.com/ltto/T/mybatis/node"
 	"reflect"
+	"runtime/debug"
 	"strings"
 )
-
 
 func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd, conf *LoadConf) (val reflect.Value, err error) {
 	if ft == nil || ft.Kind() != reflect.Func {
@@ -28,12 +28,17 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 	if len(tags) != ft.NumIn() {
 		return val, errors.New(fmt.Sprintf("func params len(%v) but fund(%d)", tags, ft.NumIn()))
 	}
-	return reflect.MakeFunc(ft, func(args []reflect.Value) []reflect.Value {
+	return reflect.MakeFunc(ft, func(args []reflect.Value) (returns []reflect.Value) {
 		var (
 			result      Tsql.QueryResult
 			err         error
 			returnValue reflect.Value
 		)
+		defer func() {
+			if i := recover(); i != nil {
+				returns = bindReturn(ft, returnValue, errors.New(fmt.Sprint("recover():", i, "\r\n", string(debug.Stack()))))
+			}
+		}()
 
 		m := make(map[string]interface{})
 		for i := range args {
@@ -83,7 +88,6 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 		return bindReturn(ft, returnValue, err)
 	}), nil
 }
-
 
 func IsValuer(v reflect.Value) bool {
 	defer func() { recover() }()
