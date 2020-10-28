@@ -1,8 +1,6 @@
 package Tsql
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/bndr/gotabulate"
@@ -59,14 +57,14 @@ func (q QueryResult) DecodePtr(ptr reflect.Value, outTag string) error {
 	for ptr.Kind() == reflect.Ptr {
 		ptr = ptr.Elem()
 	}
-	if outTag != "" {
-		if len(q.Data) != 1 {
-			i := len(q.Data)
-			return errors.New(fmt.Sprintf("need 1 fund %d", i))
-		}
-		vals := q.Data[0][outTag]
-		vals[0].BindData(ptr, false)
-	}
+	//if outTag != "" {
+	//	if len(q.Data) != 1 {
+	//		i := len(q.Data)
+	//		return errors.New(fmt.Sprintf("need 1 fund %d", i))
+	//	}
+	//	vals := q.Data[0][outTag]
+	//	vals[0].BindData(ptr, false)
+	//}
 	if ptr.Kind() == reflect.Slice {
 		slice := ptr
 		for i := range q.Data {

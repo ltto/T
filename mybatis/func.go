@@ -3,11 +3,9 @@ package mybatis
 import (
 	"errors"
 	"fmt"
-	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
 	"github.com/ltto/T/mybatis/node"
 	"reflect"
-	"runtime/debug"
 	"strings"
 )
 
@@ -15,80 +13,56 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 	if ft == nil || ft.Kind() != reflect.Func {
 		return val, errors.New("你看看你传的参数是个啥")
 	}
-	if ft.NumOut() > 2 {
-		return val, errors.New("the max return is 2")
+	mappings := strings.Split(tagStr, ",")
+	if len(mappings) == 1 && mappings[0] == "" {
+		mappings = mappings[0:0]
 	}
-	if ft.Out(ft.NumOut()-1).String() != "error" {
-		return val, errors.New("the last return must's `error`")
-	}
-	tags := strings.Split(tagStr, ",")
-	if len(tags) == 1 && tags[0] == "" {
-		tags = tags[0:0]
-	}
-	if len(tags) != ft.NumIn() {
-		return val, errors.New(fmt.Sprintf("func params len(%v) but fund(%d)", tags, ft.NumIn()))
+	if len(mappings) != ft.NumIn() {
+		return val, errors.New(fmt.Sprintf("func params len(%v) but fund(%d)", mappings, ft.NumIn()))
 	}
 	return reflect.MakeFunc(ft, func(args []reflect.Value) (returns []reflect.Value) {
 		var (
-			result      Tsql.QueryResult
-			err         error
-			returnValue reflect.Value
+			result *SQLResult
+			err    error
 		)
 		defer func() {
-			if i := recover(); i != nil {
-				returns = bindReturn(ft, returnValue, errors.New(fmt.Sprint("recover():", i, "\r\n", string(debug.Stack()))))
-			}
+			//if i := recover(); i != nil {
+			//	returns = bindReturn(ft, returnValue, errors.New(fmt.Sprint("recover():", i, "\r\n", string(debug.Stack()))))
+			//}
 		}()
-
-		m := make(map[string]interface{})
-		for i := range args {
-			m[tags[i]] = args[i].Interface()
-			ref.BreakDataVal(args[i].Interface(), m, tags[i], ".")
-		}
-		sqlExc, err := PareSQL(m, n)
+		sqlExc, err := PareSQL(pareArgs(args, mappings), n)
 		if err != nil {
-			return bindReturn(ft, returnValue, err)
+			return bindReturn(ft, nil, err)
 		}
 
 		if result, err = sqlExc.ExecSQL(db()); err != nil {
-			return bindReturn(ft, returnValue, err)
+			return bindReturn(ft, result, err)
 		}
-		if n.UseGeneratedKeys {
-			kk := ""
-			switch sqlExc.Operate {
-			case node.INSERT:
-				kk = "sql.insert"
-			case node.UPDATE:
-				kk = "sql.update"
-			}
-			val := result.Data[0][kk][0]
-			var tag = "json"
-			if conf != nil && conf.Tag != "" {
-				tag = conf.Tag
-			}
-			if err := bindKey(args, val.Data(), tag); err != nil {
-				return bindReturn(ft, returnValue, err)
-			}
-		}
-		if ft.NumOut() == 2 {
-			returnValue = reflect.New(ft.Out(0))
-			outT := ft.Out(0)
-			for outT.Kind() == reflect.Ptr {
-				outT = outT.Elem()
-			}
-			switch (outT).Kind() {
-			case reflect.Map, reflect.Interface:
-				returnValue.Elem().Set(reflect.MakeMap(ft.Out(0)))
-			case reflect.Slice:
-				returnValue.Elem().Set(reflect.MakeSlice(ft.Out(0), 0, 0))
-			}
-			err = result.DecodePtr(returnValue, "")
-			returnValue = returnValue.Elem()
-		}
-		return bindReturn(ft, returnValue, err)
+		//if n.UseGeneratedKeys {
+		//	switch sqlExc.Operate {
+		//	case node.INSERT:
+		//	case node.UPDATE:
+		//	}
+		//	var tag = "json"
+		//	if conf != nil && conf.Tag != "" {
+		//		tag = conf.Tag
+		//	}
+		//	if err := bindInKey(args, val.Data(), tag); err != nil {
+		//		return bindReturn(ft, result, err)
+		//	}
+		//}
+		return bindReturn(ft, result, err)
 	}), nil
 }
-
+func pareArgs(args []reflect.Value, mappings []string) (m map[string]interface{}) {
+	m = make(map[string]interface{})
+	for i := range args {
+		mapping := mappings[i]
+		m[mapping] = args[i].Interface()
+		ref.BreakDataVal(args[i].Interface(), m, mapping, ".")
+	}
+	return
+}
 func IsValuer(v reflect.Value) bool {
 	defer func() { recover() }()
 	t := v.MethodByName("Value").Type()

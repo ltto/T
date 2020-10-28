@@ -13,7 +13,7 @@
     </resultMap>
 
     <sql id="base" lang="go">
-        `cid`, `userID`, `name`, `URL`, `createdAt`, `updatedAt`, `deletedAt`
+        `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`
     </sql>
     <!-- insert -->
     <insert id="Save" useGeneratedKeys="true" lang="go">
@@ -23,7 +23,7 @@
     <select id="SelectByID" lang="go" resultMap="M" resultType="T">
         SELECT
         <include refid="base"/>
-        FROM `albums` WhERE `cid` = #{cid}
+        FROM `albums`
     </select>
 
     <!-- update -->

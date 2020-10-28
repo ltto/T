@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/guregu/null"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/guregu/null"
 	"github.com/ltto/T/mybatis"
 )
 
@@ -32,15 +32,16 @@ func main() {
 	//fmt.Println(albumsMapper.Save(&albums))
 	fmt.Println(engine.Commit())
 	//fmt.Println(albums)
-	fmt.Println(albumsMapper.SelectByID(78))
+	id, err := albumsMapper.SelectByID(78)
+	fmt.Println(id, err)
 }
 
 type AlbumsMapper struct {
-	Save        func(obj *Albums) error        `mapperParams:"obj"`
-	SelectByID  func(id int) ([]Albums, error) `mapperParams:"cid"`
-	UpdateByID  func(obj *Albums) error        `mapperParams:"obj"`
-	DeleteByID  func(id int) error             `mapperParams:"cid"`
-	DeleteByIDs func(ids []int) error          `mapperParams:"ids"`
+	Save        func(obj Albums) error                          `mapperParams:"obj"`
+	SelectByID  func(id int) (************[]*****map[string]interface{}, error) `mapperParams:"cid"`
+	UpdateByID  func(obj *Albums) error                         `mapperParams:"obj"`
+	DeleteByID  func(id int) error                              `mapperParams:"cid"`
+	DeleteByIDs func(ids []int) error                           `mapperParams:"ids"`
 }
 
 type Albums struct {

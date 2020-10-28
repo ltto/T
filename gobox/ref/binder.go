@@ -74,9 +74,9 @@ func BindDataVal(ptr interface{}, data map[string][]Val, tag string) error {
 	for i := 0; i < typ.NumField(); i++ {
 		typeField := typ.Field(i)
 		structField := val.Field(i)
-		if !structField.CanSet() {
-			continue
-		}
+		//if !structField.CanSet() {
+		//	continue
+		//}
 		structFieldKind := structField.Kind()
 		inputFieldName := strings.Split(typeField.Tag.Get(tag), ";")[0]
 
