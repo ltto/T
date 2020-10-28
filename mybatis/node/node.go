@@ -9,12 +9,12 @@ import (
 
 //配置解析
 type Node interface {
-	Pare(args map[string]interface{}) (s string, err error)
+	pare(args map[string]interface{}) (s string, err error)
 }
 
 func PareNodes(args map[string]interface{}, nodes []Node) (s string, err error) {
 	for _, node := range nodes {
-		pare, err := node.Pare(args)
+		pare, err := node.pare(args)
 		if err != nil {
 			return s, err
 		}

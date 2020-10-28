@@ -71,14 +71,14 @@ func (q QueryResult) DecodePtr(ptr reflect.Value, outTag string) error {
 		slice := ptr
 		for i := range q.Data {
 			newV := reflect.New(slice.Type().Elem())
-			if err := ref.BindDataVal(newV.Interface(), q.Data[i], "json"); err != nil {
+			if err := ref.BindDataVal(newV.Interface(), q.Data[i], outTag); err != nil {
 				return err
 			}
 			slice = reflect.Append(slice, newV.Elem())
 		}
 		ptr.Set(slice)
 	} else if len(q.Data) >= 1 {
-		return ref.BindDataVal(ptr.Interface(), q.Data[0], "json")
+		return ref.BindDataVal(ptr.Interface(), q.Data[0], outTag)
 	}
 	return nil
 }

@@ -4,27 +4,56 @@ import (
 	"errors"
 	"github.com/ltto/T/mybatis/node"
 	"path"
+	"reflect"
 	"regexp"
 
 	"github.com/beevik/etree"
-	"github.com/ltto/T/tp"
 )
 
 type DML struct {
 	e   *Engine
 	Cmd map[string]*node.DMLRoot
 }
+
+func (D *DML) BindPtr(ptr interface{}, conf *LoadConf) (err error) {
+	v := reflect.ValueOf(ptr)
+	for v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.Kind() != reflect.Struct {
+		return errors.New("need struct")
+	}
+	t := v.Type()
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		structField := t.Field(i)
+		if field.Kind() != reflect.Func {
+			continue
+		}
+		dmlRoot := D.Cmd[structField.Name]
+		tag := structField.Tag.Get("mapperParams")
+		makeFunc, err := makeFunc(dmlRoot, field.Type(), tag, func() SqlCmd {
+			return D.e.GetDB()
+		}, conf)
+		if err != nil {
+			return err
+		}
+		field.Set(makeFunc)
+	}
+	return nil
+}
+
 type LoadConf struct {
 	Tag        string
 	PathPrefix string
 }
 
-func (e *Engine) LoadAndBindMap(conf *LoadConf, m tp.H) (err error) {
-	for k, v := range m {
+func (e *Engine) LoadAndBindMap(conf *LoadConf, mapping map[string]interface{}) (err error) {
+	for xmlStr, obj := range mapping {
 		if conf != nil && conf.PathPrefix != "" {
-			k = path.Join(conf.PathPrefix, k)
+			xmlStr = path.Join(conf.PathPrefix, xmlStr)
 		}
-		if err = e.LoadAndBind(k, v, conf); err != nil {
+		if err = e.LoadAndBind(xmlStr, obj, conf); err != nil {
 			return err
 		}
 	}

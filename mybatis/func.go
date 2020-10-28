@@ -1,7 +1,6 @@
 package mybatis
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/ltto/T/Tsql"
@@ -11,33 +10,6 @@ import (
 	"strings"
 )
 
-func (D *DML) BindPtr(ptr interface{}, conf *LoadConf) (err error) {
-	v := reflect.ValueOf(ptr)
-	for v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	if v.Kind() != reflect.Struct {
-		return errors.New("need struct")
-	}
-	t := v.Type()
-	for i := 0; i < v.NumField(); i++ {
-		field := v.Field(i)
-		structField := t.Field(i)
-		if field.Kind() != reflect.Func {
-			continue
-		}
-		dmlRoot := D.Cmd[structField.Name]
-		tag := structField.Tag.Get("mapperParams")
-		makeFunc, err := makeFunc(dmlRoot, field.Type(), tag, func() SqlCmd {
-			return D.e.GetDB()
-		}, conf)
-		if err != nil {
-			return err
-		}
-		field.Set(makeFunc)
-	}
-	return nil
-}
 
 func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd, conf *LoadConf) (val reflect.Value, err error) {
 	if ft == nil || ft.Kind() != reflect.Func {
@@ -78,10 +50,10 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 		}
 		if n.UseGeneratedKeys {
 			kk := ""
-			switch Operate(sqlExc.SQL) {
-			case INSERT:
+			switch sqlExc.Operate {
+			case node.INSERT:
 				kk = "sql.insert"
-			case UPDATE:
+			case node.UPDATE:
 				kk = "sql.update"
 			}
 			val := result.Data[0][kk][0]
@@ -112,87 +84,7 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 	}), nil
 }
 
-func bindReturn(ft reflect.Type, result reflect.Value, e error) (results []reflect.Value) {
-	results = make([]reflect.Value, ft.NumOut())
-	size := len(results)
-	switch size {
-	case 1:
-		results[0] = bindReturnOne(ft.Out(0), result, e)
-	case 2:
-		results[0] = bindReturnOne(ft.Out(0), result, e)
-		results[1] = bindReturnOne(ft.Out(1), result, e)
-	}
-	return
-}
-func bindReturnOne(fot reflect.Type, result reflect.Value, e error) (v reflect.Value) {
-	if ref.IsError(fot) {
-		return bindReturnErr(fot, e)
-	} else {
-		return bindReturnValue(fot, result)
-	}
-}
 
-func bindReturnErr(t reflect.Type, e error) (v reflect.Value) {
-	v = reflect.New(t).Elem()
-	if e != nil {
-		v.Set(reflect.ValueOf(e))
-	} else {
-		v = reflect.Zero(t)
-	}
-	return
-}
-func bindReturnValue(t reflect.Type, result reflect.Value) (v reflect.Value) {
-	if !result.IsValid() {
-		v = reflect.New(t).Elem()
-		return
-	}
-	return result
-}
-
-func bindKey(args []reflect.Value, src interface{}, tag string) error {
-	for i := range args {
-		val := args[i]
-		if val.Kind() != reflect.Ptr {
-			return nil
-		}
-		for val.Kind() == reflect.Ptr {
-			val = val.Elem()
-		}
-		typ := val.Type()
-		if typ.Kind() != reflect.Struct {
-			return nil
-		}
-		fields := ref.Fields(typ)
-		for _, fieldT := range fields {
-			structField := val.FieldByName(fieldT.Name)
-			for structField.Kind() == reflect.Ptr {
-				structField = structField.Elem()
-			}
-			if structField.Kind() == reflect.Invalid || !structField.CanInterface() {
-				continue
-			}
-			split := strings.Split(fieldT.Tag.Get("json"), ";")
-			key := false
-			for i := range split {
-				if key = split[i] == "primary_key"; key {
-					break
-				}
-			}
-			if key {
-				scanner, ok := structField.Addr().Interface().(sql.Scanner)
-				if ok {
-					return scanner.Scan(src)
-				}
-				_, err := ref.UnmarshalField(structField.Kind(), ref.NewVal(src), structField)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-	}
-	return nil
-}
 func IsValuer(v reflect.Value) bool {
 	defer func() { recover() }()
 	t := v.MethodByName("Value").Type()

@@ -7,7 +7,6 @@ import (
 
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
-	"github.com/ltto/T/gobox/str"
 )
 
 type SqlCmd interface {
@@ -15,24 +14,20 @@ type SqlCmd interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 }
 type SqlExec struct {
-	db     *sql.DB
-	SQL    string
-	params []interface{}
+	db      *sql.DB
+	SQL     string
+	Operate node.SQLOperate
+	params  []interface{}
 }
 
 func PareSQL(m map[string]interface{}, root *node.DMLRoot) (ex SqlExec, err error) {
-	pare, err := root.Pare(m)
+	pare, err := root.PareSQL(m)
 	if err != nil {
 		return ex, err
 	}
-	ex.SQL = pare
-	ex.SQL = str.Expand('#', ex.SQL, func(s string) string {
-		ex.params = append(ex.params, m[s])
-		return "?"
-	})
-	ex.SQL = str.Expand('$', ex.SQL, func(s string) string {
-		return fmt.Sprintf("%v", m[s])
-	})
+	ex.SQL = pare.SQL
+	ex.params = pare.Params
+	ex.Operate = pare.Operate
 	return
 }
 
@@ -76,7 +71,7 @@ func (s SqlExec) Exec(tx SqlCmd) (Tsql.QueryResult, error) {
 
 func (s SqlExec) ExecSQL(tx SqlCmd) (result Tsql.QueryResult, err error) {
 	fmt.Println("SQLCmd:::", s.SQL, s.params)
-	if Operate(s.SQL) == SELECT {
+	if s.Operate == node.SELECT {
 		if result, err = s.Query(tx); err != nil {
 			return result, err
 		}

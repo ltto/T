@@ -16,7 +16,7 @@ type ForEach struct {
 	Close      string
 }
 
-func (n *ForEach) Pare(args map[string]interface{}) (s string, err error) {
+func (n *ForEach) pare(args map[string]interface{}) (s string, err error) {
 	coll := args[n.Collection]
 	nodes := ""
 	if coll == nil {

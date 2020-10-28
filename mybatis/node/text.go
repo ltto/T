@@ -15,7 +15,7 @@ type Text struct {
 	Text string
 }
 
-func (n *Text) Pare(args map[string]interface{}) (s string, err error) {
+func (n *Text) pare(args map[string]interface{}) (s string, err error) {
 	temp := args["_temp"].(map[string]string)
 	expand := str.Expand('#', n.Text, func(s string) string {
 		s2, ok := temp[s]

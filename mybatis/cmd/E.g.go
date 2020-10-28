@@ -6,7 +6,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/guregu/null"
 	"github.com/ltto/T/mybatis"
-	"github.com/ltto/T/tp"
 )
 
 func main() {
@@ -18,7 +17,7 @@ func main() {
 	if err = engine.LoadAndBindMap(&mybatis.LoadConf{
 		PathPrefix: "/Users/liutongtong/gocode/T/mybatis",
 		Tag:        "json",
-	}, tp.H{
+	}, map[string]interface{}{
 		"AlbumsMapper.xml": &albumsMapper,
 	}); err != nil {
 		panic(err)

@@ -13,7 +13,7 @@ type If struct {
 	Test  string
 }
 
-func (n *If) Pare(args map[string]interface{}) (s string, err error) {
+func (n *If) pare(args map[string]interface{}) (s string, err error) {
 	pareIF, err := n.pareIF(args)
 	if err != nil {
 		return s, err
