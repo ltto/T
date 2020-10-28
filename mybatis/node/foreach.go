@@ -4,22 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-
-	"github.com/beevik/etree"
 )
-
-func NewNodeForEach(es *etree.Element) *ForEach {
-	child := PareChild(es.Child)
-	return &ForEach{
-		Child:      child,
-		Close:      es.SelectAttrValue("close", ""),
-		Collection: es.SelectAttrValue("collection", ""),
-		Index:      es.SelectAttrValue("index", ""),
-		Item:       es.SelectAttrValue("item", ""),
-		Open:       es.SelectAttrValue("open", ""),
-		Separator:  es.SelectAttrValue("separator", ""),
-	}
-}
 
 type ForEach struct {
 	Child      []Node
@@ -31,8 +16,8 @@ type ForEach struct {
 	Close      string
 }
 
-func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
-	coll := m[n.Collection]
+func (n *ForEach) Pare(args map[string]interface{}) (s string, err error) {
+	coll := args[n.Collection]
 	nodes := ""
 	if coll == nil {
 		return n.Open + nodes + n.Close, nil
@@ -41,16 +26,16 @@ func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
 	for v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	temp := m["_temp"].(map[string]string)
+	temp := args["_temp"].(map[string]string)
 	switch v.Kind() {
 	case reflect.Slice:
 		for i := 0; i < v.Cap(); i++ {
 			temp[n.Index] = fmt.Sprint(i)
-			m[n.Index] = i
+			args[n.Index] = i
 			temp[n.Item] = fmt.Sprintf("#{%s.%d}", n.Collection, i)
-			m[fmt.Sprintf("%s.%d", n.Collection, i)] = v.Index(i).Interface()
+			args[fmt.Sprintf("%s.%d", n.Collection, i)] = v.Index(i).Interface()
 
-			if ps, err := PareNodes(m, n.Child); err != nil {
+			if ps, err := PareNodes(args, n.Child); err != nil {
 				return s, err
 			} else {
 				nodes += ps + n.Separator
@@ -59,11 +44,11 @@ func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
 	case reflect.Map:
 		iter := v.MapRange()
 		for iter.Next() {
-			m[n.Index] = fmt.Sprint(iter.Key().Interface())
-			m[n.Index] = iter.Key().Interface()
-			m[n.Item] = fmt.Sprintf("#{%s.%s}", n.Collection, iter.Key())
-			m[fmt.Sprintf("%s.%s", n.Collection, iter.Key())] = iter.Value().Interface()
-			if ps, err := PareNodes(m, n.Child); err != nil {
+			args[n.Index] = fmt.Sprint(iter.Key().Interface())
+			args[n.Index] = iter.Key().Interface()
+			args[n.Item] = fmt.Sprintf("#{%s.%s}", n.Collection, iter.Key())
+			args[fmt.Sprintf("%s.%s", n.Collection, iter.Key())] = iter.Value().Interface()
+			if ps, err := PareNodes(args, n.Child); err != nil {
 				return s, err
 			} else {
 				nodes += ps + n.Separator
@@ -73,7 +58,7 @@ func (n *ForEach) Pare(m map[string]interface{}) (s string, err error) {
 		return s, errors.New("ForEach need slice or map")
 	}
 	defer func() {
-		delete(m, n.Index)
+		delete(args, n.Index)
 		delete(temp, n.Index)
 		delete(temp, n.Item)
 	}()

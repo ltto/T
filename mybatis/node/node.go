@@ -5,38 +5,16 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/beevik/etree"
 )
 
 //配置解析
 type Node interface {
-	Pare(m map[string]interface{}) (s string, err error)
+	Pare(args map[string]interface{}) (s string, err error)
 }
 
-func PareChild(es []etree.Token) (nodes []Node) {
-	for i := range es {
-		elem := es[i]
-		switch e := elem.(type) {
-		case *etree.Element:
-			switch strings.ToLower(e.Tag) {
-			case "if":
-				nodes = append(nodes, NewNodeIf(e))
-			case "foreach":
-				nodes = append(nodes, NewNodeForEach(e))
-			case "include":
-				nodes = append(nodes, NewNodeInclude(e))
-			}
-		case *etree.CharData:
-			nodes = append(nodes, NewNodeText(e.Data))
-		}
-	}
-	return
-}
-
-func PareNodes(m map[string]interface{}, nodes []Node) (s string, err error) {
+func PareNodes(args map[string]interface{}, nodes []Node) (s string, err error) {
 	for _, node := range nodes {
-		pare, err := node.Pare(m)
+		pare, err := node.Pare(args)
 		if err != nil {
 			return s, err
 		}
@@ -45,7 +23,7 @@ func PareNodes(m map[string]interface{}, nodes []Node) (s string, err error) {
 	return
 }
 
-func FindStr(m map[string]interface{}, str string) (interface{}, error) {
+func FindStr(args map[string]interface{}, str string) (interface{}, error) {
 	s := str
 	var objs = []string{s}
 	var apps = []string{""}
@@ -58,7 +36,7 @@ func FindStr(m map[string]interface{}, str string) (interface{}, error) {
 	var app []string
 	var inter interface{}
 	for idx, o := range objs {
-		if i, ok := m[o]; ok {
+		if i, ok := args[o]; ok {
 			inter = i
 			app = strings.Split(apps[idx], ".")
 			break

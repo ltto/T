@@ -1,44 +1,31 @@
 package mybatis
 
 import (
-	"strconv"
-	"strings"
-
 	"github.com/beevik/etree"
 	"github.com/ltto/T/mybatis/node"
+	"strconv"
 )
 
-func NewNodeRoot(root *etree.Element, Sql *map[string]*etree.Element) *DMLRoot {
+func NewNodeRoot(root *etree.Element, Sql map[string]*etree.Element) *node.DMLRoot {
 	id := root.SelectAttrValue("id", "")
-	tag := root.Tag
-	child := node.PareChild(root.Child)
+	method := root.Tag
+	child := node.PareChildXML(root.Child)
 	UseGeneratedKeys := false
-	if tag == "insert" {
+	if method == "insert" {
 		UseGeneratedKeys, _ = strconv.ParseBool(root.SelectAttrValue("useGeneratedKeys", "false"))
 	}
-	return &DMLRoot{
+	dmlRoot := &node.DMLRoot{
 		Child:            child,
 		ID:               id,
-		Tag:              tag,
-		Sql:              Sql,
+		SQLInclude:       make(map[string]*node.DMLRoot),
+		Method:           method,
 		UseGeneratedKeys: UseGeneratedKeys,
 	}
-}
+	if len(Sql) != 0 {
+		for k, element := range Sql {
+			dmlRoot.SQLInclude[k] = NewNodeRoot(element, nil)
+		}
+	}
 
-type DMLRoot struct {
-	ID               string
-	Tag              string
-	UseGeneratedKeys bool
-	Sql              *map[string]*etree.Element
-	Child            []node.Node
-}
-
-func (n *DMLRoot) Pare(m map[string]interface{}) (s string, err error) {
-	newM := m
-	//use temp for foreach
-	newM["_temp"] = map[string]string{}
-	//use sql for include tag
-	newM["_sql"] = n.Sql
-	nodes, err := node.PareNodes(newM, n.Child)
-	return strings.TrimSpace(nodes), err
+	return dmlRoot
 }

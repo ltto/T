@@ -2,6 +2,7 @@ package mybatis
 
 import (
 	"errors"
+	"github.com/ltto/T/mybatis/node"
 	"path"
 	"regexp"
 
@@ -11,7 +12,7 @@ import (
 
 type DML struct {
 	e   *Engine
-	Cmd map[string]*DMLRoot
+	Cmd map[string]*node.DMLRoot
 }
 type LoadConf struct {
 	Tag        string
@@ -82,9 +83,9 @@ func loadDml(m map[string][]*etree.Element, key string, dml *DML, sqlTag map[str
 			return errors.New("重复的ID:" + id)
 		}
 		if dml.Cmd == nil {
-			dml.Cmd = make(map[string]*DMLRoot, 0)
+			dml.Cmd = make(map[string]*node.DMLRoot, 0)
 		}
-		dml.Cmd[id] = NewNodeRoot(elements[i], &sqlTag)
+		dml.Cmd[id] = NewNodeRoot(elements[i], sqlTag)
 	}
 	return nil
 }

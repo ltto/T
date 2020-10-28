@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
+	"github.com/ltto/T/mybatis/node"
 	"reflect"
 	"strings"
 )
@@ -27,7 +28,7 @@ func (D *DML) BindPtr(ptr interface{}, conf *LoadConf) (err error) {
 		}
 		dmlRoot := D.Cmd[structField.Name]
 		tag := structField.Tag.Get("mapperParams")
-		makeFunc, err := dmlRoot.makeFunc(field.Type(), tag, func() SqlCmd {
+		makeFunc, err := makeFunc(dmlRoot, field.Type(), tag, func() SqlCmd {
 			return D.e.GetDB()
 		}, conf)
 		if err != nil {
@@ -38,7 +39,7 @@ func (D *DML) BindPtr(ptr interface{}, conf *LoadConf) (err error) {
 	return nil
 }
 
-func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, conf *LoadConf) (val reflect.Value, err error) {
+func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd, conf *LoadConf) (val reflect.Value, err error) {
 	if ft == nil || ft.Kind() != reflect.Func {
 		return val, errors.New("你看看你传的参数是个啥")
 	}
@@ -55,13 +56,12 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, con
 	if len(tags) != ft.NumIn() {
 		return val, errors.New(fmt.Sprintf("func params len(%v) but fund(%d)", tags, ft.NumIn()))
 	}
-	return reflect.MakeFunc(ft, func(args []reflect.Value) (results []reflect.Value) {
+	return reflect.MakeFunc(ft, func(args []reflect.Value) []reflect.Value {
 		var (
 			result      Tsql.QueryResult
 			err         error
 			returnValue reflect.Value
 		)
-		results = make([]reflect.Value, ft.NumOut())
 
 		m := make(map[string]interface{})
 		for i := range args {
@@ -70,13 +70,11 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, con
 		}
 		sqlExc, err := PareSQL(m, n)
 		if err != nil {
-			bindReturn(ft, results, returnValue, err)
-			return
+			return bindReturn(ft, returnValue, err)
 		}
 
 		if result, err = sqlExc.ExecSQL(db()); err != nil {
-			bindReturn(ft, results, returnValue, err)
-			return
+			return bindReturn(ft, returnValue, err)
 		}
 		if n.UseGeneratedKeys {
 			kk := ""
@@ -92,7 +90,7 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, con
 				tag = conf.Tag
 			}
 			if err := bindKey(args, val.Data(), tag); err != nil {
-				bindReturn(ft, results, returnValue, err)
+				return bindReturn(ft, returnValue, err)
 			}
 		}
 		if ft.NumOut() == 2 {
@@ -110,29 +108,47 @@ func (n *DMLRoot) makeFunc(ft reflect.Type, tagStr string, db func() SqlCmd, con
 			err = result.DecodePtr(returnValue, "")
 			returnValue = returnValue.Elem()
 		}
-		bindReturn(ft, results, returnValue, err)
-		return results
+		return bindReturn(ft, returnValue, err)
 	}), nil
 }
 
-func bindReturn(ft reflect.Type, results []reflect.Value, result reflect.Value, e error) {
+func bindReturn(ft reflect.Type, result reflect.Value, e error) (results []reflect.Value) {
+	results = make([]reflect.Value, ft.NumOut())
 	size := len(results)
 	switch size {
 	case 1:
-		results[0] = reflect.New(ft.Out(0)).Elem()
-		if e != nil {
-			results[0].Set(reflect.ValueOf(e))
-		}
+		results[0] = bindReturnOne(ft.Out(0), result, e)
 	case 2:
-		results[0] = result
-		results[1] = reflect.New(ft.Out(1)).Elem()
-		if e != nil {
-			results[1].Set(reflect.ValueOf(e))
-		} else {
-			results[1] = reflect.Zero(ft.Out(1))
-		}
+		results[0] = bindReturnOne(ft.Out(0), result, e)
+		results[1] = bindReturnOne(ft.Out(1), result, e)
+	}
+	return
+}
+func bindReturnOne(fot reflect.Type, result reflect.Value, e error) (v reflect.Value) {
+	if ref.IsError(fot) {
+		return bindReturnErr(fot, e)
+	} else {
+		return bindReturnValue(fot, result)
 	}
 }
+
+func bindReturnErr(t reflect.Type, e error) (v reflect.Value) {
+	v = reflect.New(t).Elem()
+	if e != nil {
+		v.Set(reflect.ValueOf(e))
+	} else {
+		v = reflect.Zero(t)
+	}
+	return
+}
+func bindReturnValue(t reflect.Type, result reflect.Value) (v reflect.Value) {
+	if !result.IsValid() {
+		v = reflect.New(t).Elem()
+		return
+	}
+	return result
+}
+
 func bindKey(args []reflect.Value, src interface{}, tag string) error {
 	for i := range args {
 		val := args[i]

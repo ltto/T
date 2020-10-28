@@ -7,7 +7,7 @@ import (
 )
 
 func NewNodeText(str string) *Text {
-	var reg, _ = regexp.Compile("[ |\n|\t]+")
+	var reg, _ = regexp.Compile("[ |\n\t]+")
 	return &Text{Text: reg.ReplaceAllString(str, " ")}
 }
 
@@ -15,8 +15,8 @@ type Text struct {
 	Text string
 }
 
-func (n *Text) Pare(m map[string]interface{}) (s string, err error) {
-	temp := m["_temp"].(map[string]string)
+func (n *Text) Pare(args map[string]interface{}) (s string, err error) {
+	temp := args["_temp"].(map[string]string)
 	expand := str.Expand('#', n.Text, func(s string) string {
 		s2, ok := temp[s]
 		if ok {

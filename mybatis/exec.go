@@ -3,6 +3,7 @@ package mybatis
 import (
 	"database/sql"
 	"fmt"
+	"github.com/ltto/T/mybatis/node"
 
 	"github.com/ltto/T/Tsql"
 	"github.com/ltto/T/gobox/ref"
@@ -19,7 +20,7 @@ type SqlExec struct {
 	params []interface{}
 }
 
-func PareSQL(m map[string]interface{}, root *DMLRoot) (ex SqlExec, err error) {
+func PareSQL(m map[string]interface{}, root *node.DMLRoot) (ex SqlExec, err error) {
 	pare, err := root.Pare(m)
 	if err != nil {
 		return ex, err
