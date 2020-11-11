@@ -1,23 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "https://raw.githubusercontent.com/ltto/GoMybatis/master/mybatis-3-mapper.dtd">
+        "mybatis-3-mapper.dtd">
 <mapper>
-    <resultMap id="BaseResultMap" tables="biz_user_address">
-        <id column="cid" property="Cid" langType="int"/>
-        <result column="userID" property="UserID" langType="int"/>
-        <result column="name" property="Name" langType="string"/>
-        <result column="URL" property="URL" langType="string"/>
-        <result column="createdAt" property="CreatedAt" langType="time.Time"/>
-        <result column="updatedAt" property="UpdatedAt" langType="time.Time"/>
-        <result column="deletedAt" property="DeletedAt" langType="time.Time"/>
-    </resultMap>
 
     <sql id="base" lang="go">
         `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`
     </sql>
     <!-- insert -->
     <insert id="Save" useGeneratedKeys="true" lang="go">
-        INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name}, #{obj.URL}, #{obj.CreatedAt}, #{obj.UpdatedAt}, #{obj.DeletedAt})
+        INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name}, #{obj.URL},
+        #{obj.CreatedAt}, #{obj.UpdatedAt}, #{obj.DeletedAt})
     </insert>
     <!-- selectOne -->
     <select id="SelectByID" lang="go" resultMap="M" resultType="T">
