@@ -27,7 +27,7 @@ func (s *SQLResult) scanOBJ(returnValue *reflect.Value, types ...reflect.Type) (
 	switch types[0].Kind() {
 	case reflect.Map:
 		if rows := s.Rows; rows.Next() {
-			if err := scanMap(columns, rows, *returnValue); err != nil {
+			if err := scanMap(columns, rows, returnValue.Elem()); err != nil {
 				return err
 			}
 		}
@@ -68,27 +68,18 @@ func (s *SQLResult) scanOBJ(returnValue *reflect.Value, types ...reflect.Type) (
 	return nil
 }
 
-func scanMap(columns []string, rows *sql.Rows, v reflect.Value) error {
+func scanMap(columns []string, rows *sql.Rows, returnValue reflect.Value) error {
+	val := returnValue.Type().Elem()
 	var vs = make([]interface{}, len(columns))
 	for i := range columns {
-		var temp interface{}
-		vs[i] = &temp
+		v := reflect.New(val)
+		vs[i] = v.Elem().Addr().Interface()
 	}
 	if err := rows.Scan(vs...); err != nil {
 		return err
 	}
 	for i, column := range columns {
-		if ip, ok := vs[i].(*interface{}); ok {
-			vs[i] = *ip
-		}
-		if bs, ok := vs[i].([]byte); ok {
-			vs[i] = string(bs)
-		}
-		if vs[i] == nil {
-			v.SetMapIndex(reflect.ValueOf(column), reflect.ValueOf(&vs[i]).Elem())
-		} else {
-			v.SetMapIndex(reflect.ValueOf(column), reflect.ValueOf(vs[i]))
-		}
+		returnValue.SetMapIndex(reflect.ValueOf(column), reflect.ValueOf(vs[i]).Elem())
 	}
 	return nil
 }

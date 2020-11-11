@@ -38,14 +38,14 @@ func main() {
 
 type AlbumsMapper struct {
 	Save        func(obj Albums) error                          `mapperParams:"obj"`
-	SelectByID  func(id int) (************[]*****map[string]interface{}, error) `mapperParams:"cid"`
+	SelectByID  func(id int) (map[string]interface{}, error) `mapperParams:"cid"`
 	UpdateByID  func(obj *Albums) error                         `mapperParams:"obj"`
 	DeleteByID  func(id int) error                              `mapperParams:"cid"`
 	DeleteByIDs func(ids []int) error                           `mapperParams:"ids"`
 }
 
 type Albums struct {
-	Cid       null.Int    `json:"cid;primary_key"`
+	Cid       interface{}    `json:"cid;primary_key"`
 	UserID    null.Int    `json:"userID"`
 	Name      null.String `json:"name"`
 	URL       null.String `json:"URL"`

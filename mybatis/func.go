@@ -63,13 +63,3 @@ func pareArgs(args []reflect.Value, mappings []string) (m map[string]interface{}
 	}
 	return
 }
-func IsValuer(v reflect.Value) bool {
-	defer func() { recover() }()
-	t := v.MethodByName("Value").Type()
-	return t.NumOut() == 2 && t.Out(0).String() == "driver.Value" && t.Out(1).String() == "error"
-}
-func IsScanner(v reflect.Value) bool {
-	defer func() { recover() }()
-	t := v.MethodByName("Scan").Type()
-	return t.NumOut() == 1 && t.Out(0).String() == "error" && t.NumIn() == 1 && t.In(0).String() == "interface"
-}

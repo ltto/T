@@ -11,8 +11,6 @@ func bindReturn(ft reflect.Type, result *SQLResult, e error) (results []reflect.
 	results = make([]reflect.Value, ft.NumOut())
 	var errIndex []int
 	var objIndex []int
-	//results[i] = bindReturnErr(out, e)
-	//return bindReturnValue(out, result)
 	for i := 0; i < ft.NumOut(); i++ {
 		if out := ft.Out(i); ref.IsError(out) {
 			errIndex = append(errIndex, i)
