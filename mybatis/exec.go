@@ -68,7 +68,7 @@ func (s SqlExec) Exec(tx SqlCmd) (LastInsertId int64, RowsAffected int64, err er
 
 func (s SqlExec) ExecSQL(tx SqlCmd) (result *SQLResult, err error) {
 	result = &SQLResult{}
-	fmt.Println("SQLCmd:::", s.SQL, s.params)
+	fmt.Println("SQLCmd:::", s.SQL, "   SQLParams:::", s.params)
 	if s.Operate == node.SELECT {
 		if result.Rows, err = s.Query(tx); err != nil {
 			return result, err

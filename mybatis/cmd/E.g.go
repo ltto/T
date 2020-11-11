@@ -26,29 +26,29 @@ func main() {
 	if err = engine.BeginTX(); err != nil {
 		panic(err)
 	}
-	//albums := Albums{}
-	//albums.Name.Scan("xiaoming")
-	//fmt.Println(albums.Name.Value())
-	//fmt.Println(albumsMapper.Save(&albums))
-	fmt.Println(engine.Commit())
-	//fmt.Println(albums)
+	albums := Albums{}
+	albums.Name.Scan("xiaoming")
+	fmt.Println(albums.Name.Value())
+	fmt.Println(albumsMapper.Save(&albums))
+	fmt.Println("commit", engine.Commit())
+	fmt.Println(albums)
 	id, err := albumsMapper.SelectByID(78)
 	fmt.Println(id, err)
 }
 
 type AlbumsMapper struct {
-	Save        func(obj Albums) error                          `mapperParams:"obj"`
-	SelectByID  func(id int) (map[string]interface{}, error) `mapperParams:"cid"`
-	UpdateByID  func(obj *Albums) error                         `mapperParams:"obj"`
-	DeleteByID  func(id int) error                              `mapperParams:"cid"`
-	DeleteByIDs func(ids []int) error                           `mapperParams:"ids"`
+	Save        func(obj *Albums) error       `mapperParams:"obj"`
+	SelectByID  func(id int) (Albums, error) `mapperParams:"cid"`
+	UpdateByID  func(obj *Albums) error      `mapperParams:"obj"`
+	DeleteByID  func(id int) error           `mapperParams:"cid"`
+	DeleteByIDs func(ids []int) error        `mapperParams:"ids"`
 }
 
 type Albums struct {
-	Cid       interface{}    `json:"cid;primary_key"`
+	Cid       null.Int    `json:"cid;primary_key"`
 	UserID    null.Int    `json:"userID"`
 	Name      null.String `json:"name"`
-	URL       null.String `json:"URL"`
+	//URL       null.String `json:"URL"`
 	CreatedAt null.Time   `json:"createdAt"`
 	UpdatedAt null.Time   `json:"updatedAt"`
 	DeletedAt null.Time   `json:"deletedAt"`

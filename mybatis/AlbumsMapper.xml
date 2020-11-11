@@ -8,7 +8,7 @@
     </sql>
     <!-- insert -->
     <insert id="Save" useGeneratedKeys="true" lang="go">
-        INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name}, #{obj.URL},
+        INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name},
         #{obj.CreatedAt}, #{obj.UpdatedAt}, #{obj.DeletedAt})
     </insert>
     <!-- selectOne -->

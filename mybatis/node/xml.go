@@ -9,12 +9,12 @@ func PareChildXML(es []etree.Token) (nodes []Node) {
 	for i := range es {
 		elem := es[i]
 
-		nodes = append(nodes, funcName(elem)...)
+		nodes = append(nodes, doPareChildXML(elem)...)
 	}
 	return
 }
 
-func funcName(elem etree.Token) (nodes []Node) {
+func doPareChildXML(elem etree.Token) (nodes []Node) {
 	switch e := elem.(type) {
 	case *etree.Element:
 		switch strings.ToLower(e.Tag) {
