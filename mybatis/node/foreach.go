@@ -6,7 +6,8 @@ import (
 	"reflect"
 )
 
-type ForEach struct {
+type Foreach struct {
+	parent     Cell
 	Child      []Node
 	Item       string
 	Index      string
@@ -16,7 +17,33 @@ type ForEach struct {
 	Close      string
 }
 
-func (n *ForEach) pare(args map[string]interface{}) (s string, err error) {
+func (n *Foreach) EndForeach() Cell {
+	return n.parent
+}
+
+func (n *Foreach) IF(test string) *IF {
+	nodeIF := NewNodeIF(test, n)
+	n.Child = append(n.Child, nodeIF)
+	return nodeIF
+}
+
+func (n *Foreach) Foreach(item, index, collection, open, separator, close string) *Foreach {
+	foreach := NewNodeForeach(item, index, collection, open, separator, close, n)
+	n.Child = append(n.Child, foreach)
+	return foreach
+}
+
+func (n *Foreach) Include(refId string) Cell {
+	n.Child = append(n.Child, NewNodeInclude(refId))
+	return n
+}
+
+func (n *Foreach) Text(s string) Cell {
+	n.Child = append(n.Child, NewNodeText(s))
+	return n
+}
+
+func (n *Foreach) pare(args map[string]interface{}) (s string, err error) {
 	coll := args[n.Collection]
 	nodes := ""
 	if coll == nil {

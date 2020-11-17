@@ -2,6 +2,7 @@ package node
 
 import (
 	"github.com/beevik/etree"
+	"regexp"
 	"strings"
 )
 
@@ -31,18 +32,18 @@ func doPareChildXML(elem etree.Token) (nodes []Node) {
 	return nodes
 }
 
-func NewNodeIfXML(es *etree.Element) *If {
+func NewNodeIfXML(es *etree.Element) *IF {
 	child := PareChildXML(es.Child)
 	test := es.SelectAttrValue("test", "")
-	return &If{
+	return &IF{
 		Child: child,
 		Test:  test,
 	}
 }
 
-func NewNodeForEachXML(es *etree.Element) *ForEach {
+func NewNodeForEachXML(es *etree.Element) *Foreach {
 	child := PareChildXML(es.Child)
-	return &ForEach{
+	return &Foreach{
 		Child:      child,
 		Close:      es.SelectAttrValue("close", ""),
 		Collection: es.SelectAttrValue("collection", ""),
@@ -56,5 +57,34 @@ func NewNodeForEachXML(es *etree.Element) *ForEach {
 func NewNodeIncludeXML(es *etree.Element) *Include {
 	return &Include{
 		RefId: es.SelectAttrValue("refid", ""),
+	}
+}
+func NewNodeText(str string) *Text {
+	var reg, _ = regexp.Compile("[ |\n\t]+")
+	return &Text{Text: reg.ReplaceAllString(str, " ")}
+}
+
+func NewNodeIF(test string, root Cell) *IF {
+	return &IF{
+		parent: root,
+		Test:   test,
+	}
+}
+
+func NewNodeForeach(item, index, collection, open, separator, close string, root Cell) *Foreach {
+	return &Foreach{
+		parent:     root,
+		Close:      close,
+		Collection: collection,
+		Index:      index,
+		Item:       item,
+		Open:       open,
+		Separator:  separator,
+	}
+}
+
+func NewNodeInclude(refId string) *Include {
+	return &Include{
+		RefId: refId,
 	}
 }

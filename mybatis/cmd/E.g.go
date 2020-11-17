@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/guregu/null"
+	"github.com/ltto/T/mybatis/node"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ltto/T/mybatis"
@@ -26,18 +27,23 @@ func main() {
 	if err = engine.BeginTX(); err != nil {
 		panic(err)
 	}
-	albums := Albums{}
-	albums.Name.Scan("xiaoming")
-	fmt.Println(albums.Name.Value())
-	fmt.Println(albumsMapper.Save(&albums))
-	fmt.Println("commit", engine.Commit())
-	fmt.Println(albums)
-	id, err := albumsMapper.SelectByID(78)
-	fmt.Println(id, err)
+
+	root := node.Select()
+	root.Text("SELECT `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`").Text("\r\nssssss")
+	fmt.Println(root.PareSQL(nil))
+	//albums := Albums{}
+	//albums.Name.Scan("xiaoming")
+	//fmt.Println(albums.Name.Value())
+	//fmt.Println(albumsMapper.Save(&albums))
+	//fmt.Println("commit", engine.Commit())
+	//fmt.Println(albums)
+	//id, err := albumsMapper.SelectByID(78)
+	//fmt.Println(id, err)
+
 }
 
 type AlbumsMapper struct {
-	Save        func(obj *Albums) error       `mapperParams:"obj"`
+	Save        func(obj *Albums) error      `mapperParams:"obj"`
 	SelectByID  func(id int) (Albums, error) `mapperParams:"cid"`
 	UpdateByID  func(obj *Albums) error      `mapperParams:"obj"`
 	DeleteByID  func(id int) error           `mapperParams:"cid"`
@@ -45,13 +51,13 @@ type AlbumsMapper struct {
 }
 
 type Albums struct {
-	Cid       null.Int    `json:"cid;primary_key"`
-	UserID    null.Int    `json:"userID"`
-	Name      null.String `json:"name"`
+	Cid    null.Int    `json:"cid;primary_key"`
+	UserID null.Int    `json:"userID"`
+	Name   null.String `json:"name"`
 	//URL       null.String `json:"URL"`
-	CreatedAt null.Time   `json:"createdAt"`
-	UpdatedAt null.Time   `json:"updatedAt"`
-	DeletedAt null.Time   `json:"deletedAt"`
+	CreatedAt null.Time `json:"createdAt"`
+	UpdatedAt null.Time `json:"updatedAt"`
+	DeletedAt null.Time `json:"deletedAt"`
 }
 
 func (a Albums) Scan(src interface{}) error {

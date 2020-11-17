@@ -1,15 +1,8 @@
 package node
 
 import (
-	"regexp"
-
 	"github.com/ltto/T/gobox/str"
 )
-
-func NewNodeText(str string) *Text {
-	var reg, _ = regexp.Compile("[ |\n\t]+")
-	return &Text{Text: reg.ReplaceAllString(str, " ")}
-}
 
 type Text struct {
 	Text string

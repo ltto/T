@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+type Cell interface {
+	IF(test string) *IF
+	Foreach(item, index, collection, open, separator, close string) *Foreach
+	Include(refId string) Cell
+	Text(s string) Cell
+}
+
 //配置解析
 type Node interface {
 	pare(args map[string]interface{}) (s string, err error)

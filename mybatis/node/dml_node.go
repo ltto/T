@@ -14,6 +14,32 @@ type DMLRoot struct {
 	UseGeneratedKeys bool
 }
 
+func Select() *DMLRoot {
+	return &DMLRoot{Method: "SELECT"}
+}
+
+func (n *DMLRoot) IF(test string) *IF {
+	nodeIF := NewNodeIF(test, n)
+	n.Child = append(n.Child, nodeIF)
+	return nodeIF
+}
+
+func (n *DMLRoot) Foreach(item, index, collection, open, separator, close string) *Foreach {
+	foreach := NewNodeForeach(item, index, collection, open, separator, close, n)
+	n.Child = append(n.Child, foreach)
+	return foreach
+}
+
+func (n *DMLRoot) Include(refId string) Cell {
+	n.Child = append(n.Child, NewNodeInclude(refId))
+	return n
+}
+
+func (n *DMLRoot) Text(s string) Cell {
+	n.Child = append(n.Child, NewNodeText(s))
+	return n
+}
+
 type PrePareSQL struct {
 	SQL     string
 	Params  []interface{}
@@ -21,7 +47,12 @@ type PrePareSQL struct {
 }
 
 func (n *DMLRoot) pare(args map[string]interface{}) (s string, err error) {
-	newArgs := args
+	var newArgs map[string]interface{}
+	if args == nil {
+		newArgs = map[string]interface{}{}
+	} else {
+		newArgs = args
+	}
 	//use temp for foreach
 	newArgs["_temp"] = map[string]string{}
 	//use sql for include tag

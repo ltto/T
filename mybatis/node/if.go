@@ -7,13 +7,39 @@ import (
 	"strings"
 )
 
-
-type If struct {
-	Child []Node
-	Test  string
+type IF struct {
+	parent Cell
+	Child  []Node
+	Test   string
 }
 
-func (n *If) pare(args map[string]interface{}) (s string, err error) {
+func (n *IF) EndIF() Cell {
+	return n.parent
+}
+
+func (n *IF) IF(test string) *IF {
+	nodeIF := NewNodeIF(test, n)
+	n.Child = append(n.Child, nodeIF)
+	return nodeIF
+}
+
+func (n *IF) Foreach(item, index, collection, open, separator, close string) *Foreach {
+	foreach := NewNodeForeach(item, index, collection, open, separator, close, n)
+	n.Child = append(n.Child, foreach)
+	return foreach
+}
+
+func (n *IF) Include(refId string) Cell {
+	n.Child = append(n.Child, NewNodeInclude(refId))
+	return n
+}
+
+func (n *IF) Text(s string) Cell {
+	n.Child = append(n.Child, NewNodeText(s))
+	return n
+}
+
+func (n *IF) pare(args map[string]interface{}) (s string, err error) {
 	pareIF, err := n.pareIF(args)
 	if err != nil {
 		return s, err
@@ -25,7 +51,7 @@ func (n *If) pare(args map[string]interface{}) (s string, err error) {
 	}
 }
 
-func (n *If) pareIF(args map[string]interface{}) (bool, error) {
+func (n *IF) pareIF(args map[string]interface{}) (bool, error) {
 	parseBool, err := strconv.ParseBool(n.Test)
 	if err == nil {
 		return parseBool, nil
