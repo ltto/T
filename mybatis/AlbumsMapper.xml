@@ -2,12 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "mybatis-3-mapper.dtd">
 <mapper>
-
-    <sql id="base" lang="go">
+    <sql id="base">
         `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`
     </sql>
     <!-- insert -->
-    <insert id="Save" useGeneratedKeys="true" lang="go">
+    <insert id="Save" useGeneratedKeys="true">
         INSERT INTO `albums`(<include refid="base"/>) VALUES( null, #{obj.UserID}, #{obj.Name},
         #{obj.CreatedAt}, #{obj.UpdatedAt}, #{obj.DeletedAt})
     </insert>
@@ -16,16 +15,14 @@
         SELECT
         <include refid="base"/>
         FROM `albums`
+        WHERE `cid`={id}
     </select>
 
     <!-- update -->
-    <update id="UpdateByID" useGeneratedKeys="true" lang="go">
+    <update id="UpdateByID" useGeneratedKeys="true">
         UPDATE `albums` SET `cid`=#{obj.cid}
         <if test="obj.Cid.Valid">
             ,`cid` = #{obj.Cid}
-            <foreach collection="s">
-                s
-            </foreach>
         </if>
         <if test="obj.UserID.Valid">,`userID` = #{obj.UserID}</if>
         <if test="obj.Name.Valid">,`name` = #{obj.Name}</if>
@@ -37,12 +34,12 @@
     </update>
 
     <!--delete one-->
-    <delete id="DeleteByID" lang="go">
+    <delete id="DeleteByID">
         delete FROM `albums` WHERE `cid`=#{cid}
     </delete>
 
     <!-- delete list -->
-    <delete id="DeleteByIDs" lang="go">
+    <delete id="DeleteByIDs">
         delete FROM `albums` WHERE `cid` in
         <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">#{item}</foreach>
     </delete>
