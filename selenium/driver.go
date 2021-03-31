@@ -6,11 +6,12 @@ import (
 	"time"
 )
 
-type DriverDecorator struct {
+type WebDriver struct {
+	Ser  *selenium.Service
 	Data selenium.WebDriver
 }
 
-func (d *DriverDecorator) Status() *selenium.Status {
+func (d *WebDriver) Status() *selenium.Status {
 	status, err := d.Data.Status()
 	if err != nil {
 		panic(err)
@@ -18,7 +19,7 @@ func (d *DriverDecorator) Status() *selenium.Status {
 	return status
 }
 
-func (d *DriverDecorator) NewSession() string {
+func (d *WebDriver) NewSession() string {
 	session, err := d.Data.NewSession()
 	if err != nil {
 		panic(err)
@@ -26,21 +27,21 @@ func (d *DriverDecorator) NewSession() string {
 	return session
 }
 
-func (d *DriverDecorator) SessionId() string {
+func (d *WebDriver) SessionId() string {
 	return d.Data.SessionId()
 }
 
-func (d *DriverDecorator) SessionID() string {
+func (d *WebDriver) SessionID() string {
 	return d.Data.SessionID()
 }
 
-func (d *DriverDecorator) SwitchSession(sessionID string) {
+func (d *WebDriver) SwitchSession(sessionID string) {
 	if err := d.Data.SwitchSession(sessionID); err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Capabilities() Capabilities {
+func (d *WebDriver) Capabilities() Capabilities {
 	capabilities, err := d.Data.Capabilities()
 	if err != nil {
 		panic(err)
@@ -48,35 +49,35 @@ func (d *DriverDecorator) Capabilities() Capabilities {
 	return Capabilities{d: &capabilities}
 }
 
-func (d *DriverDecorator) SetAsyncScriptTimeout(timeout time.Duration) {
+func (d *WebDriver) SetAsyncScriptTimeout(timeout time.Duration) {
 	err := d.Data.SetAsyncScriptTimeout(timeout)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) SetImplicitWaitTimeout(timeout time.Duration) {
+func (d *WebDriver) SetImplicitWaitTimeout(timeout time.Duration) {
 	err := d.Data.SetImplicitWaitTimeout(timeout)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) SetPageLoadTimeout(timeout time.Duration) {
+func (d *WebDriver) SetPageLoadTimeout(timeout time.Duration) {
 	err := d.Data.SetPageLoadTimeout(timeout)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Quit() {
+func (d *WebDriver) Quit() {
 	err := d.Data.Quit()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) CurrentWindowHandle() string {
+func (d *WebDriver) CurrentWindowHandle() string {
 	url, err := d.Data.CurrentURL()
 	if err != nil {
 		panic(err)
@@ -84,7 +85,7 @@ func (d *DriverDecorator) CurrentWindowHandle() string {
 	return url
 }
 
-func (d *DriverDecorator) WindowHandles() []string {
+func (d *WebDriver) WindowHandles() []string {
 	handles, err := d.Data.WindowHandles()
 	if err != nil {
 		panic(err)
@@ -92,7 +93,7 @@ func (d *DriverDecorator) WindowHandles() []string {
 	return handles
 }
 
-func (d *DriverDecorator) CurrentURL() string {
+func (d *WebDriver) CurrentURL() string {
 	url, err := d.Data.CurrentURL()
 	if err != nil {
 		panic(err)
@@ -100,7 +101,7 @@ func (d *DriverDecorator) CurrentURL() string {
 	return url
 }
 
-func (d *DriverDecorator) Title() string {
+func (d *WebDriver) Title() string {
 	title, err := d.Data.Title()
 	if err != nil {
 		panic(err)
@@ -108,7 +109,7 @@ func (d *DriverDecorator) Title() string {
 	return title
 }
 
-func (d *DriverDecorator) PageSource() string {
+func (d *WebDriver) PageSource() string {
 	source, err := d.Data.PageSource()
 	if err != nil {
 		panic(err)
@@ -116,77 +117,80 @@ func (d *DriverDecorator) PageSource() string {
 	return source
 }
 
-func (d *DriverDecorator) Close() {
+func (d *WebDriver) Close() {
 	err := d.Data.Close()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) SwitchFrame(frame interface{}) {
+func (d *WebDriver) SwitchFrame(frame interface{}) {
+	if element, ok := frame.(WebElement); ok {
+		frame = element.d
+	}
 	err := d.Data.SwitchFrame(frame)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) SwitchWindow(name string) {
+func (d *WebDriver) SwitchWindow(name string) {
 	err := d.Data.SwitchWindow(name)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) CloseWindow(name string) {
+func (d *WebDriver) CloseWindow(name string) {
 	err := d.Data.CloseWindow(name)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) MaximizeWindow(name string) {
+func (d *WebDriver) MaximizeWindow(name string) {
 	err := d.Data.MaximizeWindow(name)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) ResizeWindow(name string, width, height int) {
+func (d *WebDriver) ResizeWindow(name string, width, height int) {
 	err := d.Data.ResizeWindow(name, width, height)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Get(url string) {
+func (d *WebDriver) Get(url string) {
 	err := d.Data.Get(url)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Forward() {
+func (d *WebDriver) Forward() {
 	err := d.Data.Forward()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Back() {
+func (d *WebDriver) Back() {
 	err := d.Data.Back()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Refresh() {
+func (d *WebDriver) Refresh() {
 	err := d.Data.Refresh()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) FindElement(by, value string) WebElement {
+func (d *WebDriver) FindElement(by, value string) WebElement {
 	element, err := d.Data.FindElement(by, value)
 	if err != nil {
 		panic(err)
@@ -194,7 +198,7 @@ func (d *DriverDecorator) FindElement(by, value string) WebElement {
 	return WebElement{element}
 }
 
-func (d *DriverDecorator) FindElements(by, value string) (list []WebElement) {
+func (d *WebDriver) FindElements(by, value string) (list []WebElement) {
 	elements, err := d.Data.FindElements(by, value)
 	if err != nil {
 		panic(err)
@@ -205,7 +209,7 @@ func (d *DriverDecorator) FindElements(by, value string) (list []WebElement) {
 	return list
 }
 
-func (d *DriverDecorator) ActiveElement() WebElement {
+func (d *WebDriver) ActiveElement() WebElement {
 	element, err := d.Data.ActiveElement()
 	if err != nil {
 		panic(err)
@@ -213,7 +217,7 @@ func (d *DriverDecorator) ActiveElement() WebElement {
 	return WebElement{element}
 }
 
-func (d *DriverDecorator) DecodeElement(bytes []byte) WebElement {
+func (d *WebDriver) DecodeElement(bytes []byte) WebElement {
 	element, err := d.Data.DecodeElement(bytes)
 	if err != nil {
 		panic(err)
@@ -221,7 +225,7 @@ func (d *DriverDecorator) DecodeElement(bytes []byte) WebElement {
 	return WebElement{element}
 }
 
-func (d *DriverDecorator) DecodeElements(bytes []byte) (list []WebElement) {
+func (d *WebDriver) DecodeElements(bytes []byte) (list []WebElement) {
 	elements, err := d.Data.DecodeElements(bytes)
 	if err != nil {
 		panic(err)
@@ -233,7 +237,7 @@ func (d *DriverDecorator) DecodeElements(bytes []byte) (list []WebElement) {
 	return list
 }
 
-func (d *DriverDecorator) GetCookies() []selenium.Cookie {
+func (d *WebDriver) GetCookies() []selenium.Cookie {
 	cookies, err := d.Data.GetCookies()
 	if err != nil {
 		panic(err)
@@ -241,7 +245,7 @@ func (d *DriverDecorator) GetCookies() []selenium.Cookie {
 	return cookies
 }
 
-func (d *DriverDecorator) GetCookie(name string) (selenium.Cookie, ) {
+func (d *WebDriver) GetCookie(name string) (selenium.Cookie, ) {
 	cookie, err := d.Data.GetCookie(name)
 	if err != nil {
 		panic(err)
@@ -249,77 +253,77 @@ func (d *DriverDecorator) GetCookie(name string) (selenium.Cookie, ) {
 	return cookie
 }
 
-func (d *DriverDecorator) AddCookie(cookie *selenium.Cookie) {
+func (d *WebDriver) AddCookie(cookie *selenium.Cookie) {
 	err := d.Data.AddCookie(cookie)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) DeleteAllCookies() {
+func (d *WebDriver) DeleteAllCookies() {
 	err := d.Data.DeleteAllCookies()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) DeleteCookie(name string) {
+func (d *WebDriver) DeleteCookie(name string) {
 	err := d.Data.DeleteCookie(name)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Click(button int) {
+func (d *WebDriver) Click(button int) {
 	err := d.Data.Click(button)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) DoubleClick() {
+func (d *WebDriver) DoubleClick() {
 	err := d.Data.DoubleClick()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) ButtonDown() {
+func (d *WebDriver) ButtonDown() {
 	err := d.Data.ButtonDown()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) ButtonUp() {
+func (d *WebDriver) ButtonUp() {
 	err := d.Data.ButtonUp()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) SendModifier(modifier string, isDown bool) {
+func (d *WebDriver) SendModifier(modifier string, isDown bool) {
 	err := d.Data.SendModifier(modifier, isDown)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) KeyDown(keys string) {
+func (d *WebDriver) KeyDown(keys string) {
 	err := d.Data.KeyDown(keys)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) KeyUp(keys string) {
+func (d *WebDriver) KeyUp(keys string) {
 	err := d.Data.KeyUp(keys)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Screenshot() []byte {
+func (d *WebDriver) Screenshot() []byte {
 	screenshot, err := d.Data.Screenshot()
 	if err != nil {
 		panic(err)
@@ -327,7 +331,7 @@ func (d *DriverDecorator) Screenshot() []byte {
 	return screenshot
 }
 
-func (d *DriverDecorator) Log(typ log.Type) []log.Message {
+func (d *WebDriver) Log(typ log.Type) []log.Message {
 	messages, err := d.Data.Log(typ)
 	if err != nil {
 		panic(err)
@@ -335,21 +339,21 @@ func (d *DriverDecorator) Log(typ log.Type) []log.Message {
 	return messages
 }
 
-func (d *DriverDecorator) DismissAlert() {
+func (d *WebDriver) DismissAlert() {
 	err := d.Data.DismissAlert()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) AcceptAlert() {
+func (d *WebDriver) AcceptAlert() {
 	err := d.Data.AcceptAlert()
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) AlertText() string {
+func (d *WebDriver) AlertText() string {
 	text, err := d.Data.AlertText()
 	if err != nil {
 		panic(err)
@@ -357,14 +361,14 @@ func (d *DriverDecorator) AlertText() string {
 	return text
 }
 
-func (d *DriverDecorator) SetAlertText(text string) {
+func (d *WebDriver) SetAlertText(text string) {
 	err := d.Data.SetAlertText(text)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) ExecuteScript(script string, args []interface{}) interface{} {
+func (d *WebDriver) ExecuteScript(script string, args []interface{}) interface{} {
 	executeScript, err := d.Data.ExecuteScript(script, args)
 	if err != nil {
 		panic(err)
@@ -372,7 +376,7 @@ func (d *DriverDecorator) ExecuteScript(script string, args []interface{}) inter
 	return executeScript
 }
 
-func (d *DriverDecorator) ExecuteScriptAsync(script string, args []interface{}) interface{} {
+func (d *WebDriver) ExecuteScriptAsync(script string, args []interface{}) interface{} {
 	async, err := d.Data.ExecuteScriptAsync(script, args)
 	if err != nil {
 		panic(err)
@@ -380,7 +384,7 @@ func (d *DriverDecorator) ExecuteScriptAsync(script string, args []interface{}) 
 	return async
 }
 
-func (d *DriverDecorator) ExecuteScriptRaw(script string, args []interface{}) []byte {
+func (d *WebDriver) ExecuteScriptRaw(script string, args []interface{}) []byte {
 	raw, err := d.Data.ExecuteScriptRaw(script, args)
 	if err != nil {
 		panic(err)
@@ -388,7 +392,7 @@ func (d *DriverDecorator) ExecuteScriptRaw(script string, args []interface{}) []
 	return raw
 }
 
-func (d *DriverDecorator) ExecuteScriptAsyncRaw(script string, args []interface{}) ([]byte, ) {
+func (d *WebDriver) ExecuteScriptAsyncRaw(script string, args []interface{}) []byte {
 	raw, err := d.Data.ExecuteScriptAsyncRaw(script, args)
 	if err != nil {
 		panic(err)
@@ -396,21 +400,21 @@ func (d *DriverDecorator) ExecuteScriptAsyncRaw(script string, args []interface{
 	return raw
 }
 
-func (d *DriverDecorator) WaitWithTimeoutAndInterval(condition selenium.Condition, timeout, interval time.Duration) {
+func (d *WebDriver) WaitWithTimeoutAndInterval(condition selenium.Condition, timeout, interval time.Duration) {
 	err := d.Data.WaitWithTimeoutAndInterval(condition, timeout, interval)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) WaitWithTimeout(condition selenium.Condition, timeout time.Duration) {
+func (d *WebDriver) WaitWithTimeout(condition selenium.Condition, timeout time.Duration) {
 	err := d.Data.WaitWithTimeout(condition, timeout)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (d *DriverDecorator) Wait(condition selenium.Condition) {
+func (d *WebDriver) Wait(condition selenium.Condition) {
 	err := d.Data.Wait(condition)
 	if err != nil {
 		panic(err)
