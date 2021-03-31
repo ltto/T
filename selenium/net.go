@@ -11,7 +11,7 @@ import (
 )
 
 func isSysErrEACCES(port int) bool {
-	l, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 80))
+	l, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		var ope = &net.OpError{}
 		if errors.As(err, &ope) {
