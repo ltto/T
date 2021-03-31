@@ -197,6 +197,30 @@ func (d *WebDriver) FindElement(by, value string) WebElement {
 	}
 	return WebElement{element}
 }
+func (d *WebDriver) FindElementByID(value string) WebElement {
+	return d.FindElement(ByID, value)
+}
+func (d *WebDriver) FindElementByXPATH(value string) WebElement {
+	return d.FindElement(ByXPATH, value)
+}
+func (d *WebDriver) FindElementByLinkText(value string) WebElement {
+	return d.FindElement(ByLinkText, value)
+}
+func (d *WebDriver) FindElementByPartialLinkText(value string) WebElement {
+	return d.FindElement(ByPartialLinkText, value)
+}
+func (d *WebDriver) FindElementByName(value string) WebElement {
+	return d.FindElement(ByName, value)
+}
+func (d *WebDriver) FindElementByTagName(value string) WebElement {
+	return d.FindElement(ByTagName, value)
+}
+func (d *WebDriver) FindElementByClassName(value string) WebElement {
+	return d.FindElement(ByClassName, value)
+}
+func (d *WebDriver) FindElementByCSSSelector(value string) WebElement {
+	return d.FindElement(ByCSSSelector, value)
+}
 
 func (d *WebDriver) FindElements(by, value string) (list []WebElement) {
 	elements, err := d.Data.FindElements(by, value)
@@ -207,6 +231,30 @@ func (d *WebDriver) FindElements(by, value string) (list []WebElement) {
 		list = append(list, WebElement{elements[i]})
 	}
 	return list
+}
+func (d *WebDriver) FindElementsByID(value string) []WebElement {
+	return d.FindElements(ByID, value)
+}
+func (d *WebDriver) FindElementsByXPATH(value string) []WebElement {
+	return d.FindElements(ByXPATH, value)
+}
+func (d *WebDriver) FindElementsByLinkText(value string) []WebElement {
+	return d.FindElements(ByLinkText, value)
+}
+func (d *WebDriver) FindElementsByPartialLinkText(value string) []WebElement {
+	return d.FindElements(ByPartialLinkText, value)
+}
+func (d *WebDriver) FindElementsByName(value string) []WebElement {
+	return d.FindElements(ByName, value)
+}
+func (d *WebDriver) FindElementsByTagName(value string) []WebElement {
+	return d.FindElements(ByTagName, value)
+}
+func (d *WebDriver) FindElementsByClassName(value string) []WebElement {
+	return d.FindElements(ByClassName, value)
+}
+func (d *WebDriver) FindElementsByCSSSelector(value string) []WebElement {
+	return d.FindElements(ByCSSSelector, value)
 }
 
 func (d *WebDriver) ActiveElement() WebElement {
