@@ -19,7 +19,7 @@ type speedReader struct {
 	F io.Reader
 }
 
-func newSpeedReader(f io.Reader) *speedReader {
+func NewSpeedReader(f io.Reader) *speedReader {
 	return &speedReader{F: f}
 }
 
