@@ -1,6 +1,7 @@
 package node
 
 type CodeToken struct {
+	string
 	tag   string
 	data  string
 	child []Node
@@ -22,14 +23,14 @@ func (c *CodeToken) Child() []Node {
 func (c *CodeToken) Attr(key string) string {
 	return c.attr[key]
 }
-func Select(c ...*CodeToken) *CodeToken {
+func Select(c ...Token) Token {
 	token := &CodeToken{tag: "select"}
 	for i := range c {
 		token.child = append(token.child, doPareChild(c[i])...)
 	}
 	return token
 }
-func IF_(test string, c ...*CodeToken) *CodeToken {
+func IF_(test string, c ...Token) Token {
 	token := &CodeToken{tag: "if", attr: map[string]string{"test": test}}
 	for i := range c {
 		token.child = append(token.child, doPareChild(c[i])...)
@@ -37,7 +38,7 @@ func IF_(test string, c ...*CodeToken) *CodeToken {
 	return token
 }
 
-func For_(index string, item string, collection string, open string, separator string, close string, c ...*CodeToken) *CodeToken {
+func For_(index string, item string, collection string, open string, separator string, close string, c ...Token) Token {
 	token := &CodeToken{tag: "foreach", attr: map[string]string{
 		"index":      index,
 		"item":       item,
@@ -51,13 +52,13 @@ func For_(index string, item string, collection string, open string, separator s
 	}
 	return token
 }
-func Include_(refId string, c ...*CodeToken) *CodeToken {
+func Include_(refId string, c ...Token) Token {
 	token := &CodeToken{tag: "sql", attr: map[string]string{"refid": refId}}
 	for i := range c {
 		token.child = append(token.child, doPareChild(c[i])...)
 	}
 	return token
 }
-func Text_(data string) *CodeToken {
+func Text_(data string) Token {
 	return &CodeToken{data: data}
 }
