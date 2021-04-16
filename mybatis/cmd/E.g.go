@@ -44,7 +44,7 @@ func main() {
 		Text_("where id in"),
 		For_("index", "item", "ids", "(", ",", ")", Text_("#{item0}")),
 	)
-	sql, err := mybatis.NewNodeRoot(root, nil).PareSQL(map[string]interface{}{
+	sql, err := NewNodeRoot(root, nil).PareSQL(map[string]interface{}{
 		"ids":   []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
 		"item0": 2020,
 	})

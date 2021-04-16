@@ -114,7 +114,7 @@ func loadDml(m map[string][]*etree.Element, key string, dml *DML, includes map[s
 		if dml.Cmd == nil {
 			dml.Cmd = make(map[string]*node.DMLRoot, 0)
 		}
-		dml.Cmd[id] = NewNodeRoot(node.NewXmlToken(elements[i]), includes)
+		dml.Cmd[id] = node.NewNodeRoot(node.NewXmlToken(elements[i]), includes)
 	}
 	return nil
 }

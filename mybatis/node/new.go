@@ -1,6 +1,24 @@
 package node
 
-import "regexp"
+import (
+	"regexp"
+	"strconv"
+)
+
+func NewNodeRoot(root Token, includes map[string]Token) *DMLRoot {
+	UseGeneratedKeys, _ := strconv.ParseBool(root.Attr("useGeneratedKeys"))
+	dmlRoot := &DMLRoot{
+		Child:            root.Child(),
+		ID:               root.Attr("id"),
+		SQLInclude:       make(map[string]*DMLRoot),
+		Method:           root.Tag(),
+		UseGeneratedKeys: UseGeneratedKeys,
+	}
+	for k, element := range includes {
+		dmlRoot.SQLInclude[k] = NewNodeRoot(element, nil)
+	}
+	return dmlRoot
+}
 
 var reg, _ = regexp.Compile("[ |\n\t]+")
 
