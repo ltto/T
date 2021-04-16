@@ -37,23 +37,14 @@ func IF_(test string, c ...*CodeToken) *CodeToken {
 	return token
 }
 
-type F struct {
-	Index      string
-	Item       string
-	Collection string
-	Open       string
-	Separator  string
-	Close      string
-}
-
-func For_(f F, c ...*CodeToken) *CodeToken {
+func For_(index string, item string, collection string, open string, separator string, close string, c ...*CodeToken) *CodeToken {
 	token := &CodeToken{tag: "foreach", attr: map[string]string{
-		"index":      f.Index,
-		"item":       f.Item,
-		"collection": f.Collection,
-		"open":       f.Open,
-		"separator":  f.Separator,
-		"close":      f.Close,
+		"index":      index,
+		"item":       item,
+		"collection": collection,
+		"open":       open,
+		"separator":  separator,
+		"close":      close,
 	}}
 	for i := range c {
 		token.child = append(token.child, doPareChild(c[i])...)
