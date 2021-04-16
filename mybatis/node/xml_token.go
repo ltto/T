@@ -24,13 +24,13 @@ func NewXmlToken(token etree.Token) *XmlToken {
 func doPareChild(elem Token) (nodes []Node) {
 	switch strings.ToLower(elem.Tag()) {
 	case "if":
-		nodes = append(nodes, elem.NewNodeIf())
+		nodes = append(nodes, TokenNewNodeIf(elem))
 	case "foreach":
-		nodes = append(nodes, elem.NewNodeForeach())
+		nodes = append(nodes, TokenNewNodeForeach(elem))
 	case "include":
-		nodes = append(nodes, elem.NewNodeInclude())
+		nodes = append(nodes, TokenNewNodeInclude(elem))
 	default:
-		nodes = append(nodes, elem.NewNodeText())
+		nodes = append(nodes, TokenNewNodeText(elem))
 	}
 	return nodes
 }
@@ -61,28 +61,4 @@ func (x *XmlToken) Attr(key string) string {
 		return x.e.SelectAttrValue(key, "")
 	}
 	return ""
-}
-
-func (x *XmlToken) NewNodeIf() *IF {
-	return NewNodeIF(x.Attr("test"), x.Child())
-}
-
-func (x *XmlToken) NewNodeForeach() *Foreach {
-	return NewNodeForeach(
-		x.Attr("item"),
-		x.Attr("index"),
-		x.Attr("collection"),
-		x.Attr("open"),
-		x.Attr("separator"),
-		x.Attr("close"),
-		x.Child(),
-	)
-}
-
-func (x *XmlToken) NewNodeInclude() *Include {
-	return NewNodeInclude(x.Attr("refid"))
-}
-
-func (x *XmlToken) NewNodeText() *Text {
-	return NewNodeText(x.Data())
 }

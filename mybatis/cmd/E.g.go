@@ -5,6 +5,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/guregu/null"
 	"github.com/ltto/T/mybatis"
+	"github.com/ltto/T/mybatis/node"
 )
 
 func main() {
@@ -35,9 +36,26 @@ func main() {
 	//fmt.Println(albumsMapper.Save(&albums))
 	//fmt.Println("commit", engine.Commit())
 	//fmt.Println(albums)
-	id, err := albumsMapper.SelectByID(78)
-	fmt.Println(id, err)
+	//id, err := albumsMapper.SelectByID(78)
+	//fmt.Println(id, err)
 
+	sql, err := mybatis.NewNodeRoot(node.Select(
+		node.Text_("select * from clnts where id in"),
+		node.For_(node.F{
+			Item:       "item",
+			Index:      "index",
+			Collection: "ids",
+			Open:       "(",
+			Separator:  ",",
+			Close:      ")",
+		}, node.Text_("#{item}")),
+	), nil).PareSQL(map[string]interface{}{
+		"ids": []int{1, 2, 3, 4, 5, 6, 7, 8, 9},
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(sql.SQL)
 }
 
 type AlbumsMapper struct {

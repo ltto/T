@@ -13,8 +13,4 @@ type Token interface {
 	Data() string
 	Child() []Node
 	Attr(key string) string
-	NewNodeIf() *IF
-	NewNodeForeach() *Foreach
-	NewNodeInclude() *Include
-	NewNodeText() *Text
 }

@@ -7,13 +7,13 @@ import (
 )
 
 type Foreach struct {
-	Child      []Node
-	Item       string
 	Index      string
+	Item       string
 	Collection string
 	Open       string
 	Separator  string
 	Close      string
+	Child      []Node
 }
 
 func (n *Foreach) pare(args map[string]interface{}) (s string, err error) {

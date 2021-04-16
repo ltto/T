@@ -29,3 +29,27 @@ func NewNodeInclude(refId string) *Include {
 		RefId: refId,
 	}
 }
+
+func TokenNewNodeIf(x Token) *IF {
+	return NewNodeIF(x.Attr("test"), x.Child())
+}
+
+func TokenNewNodeForeach(x Token) *Foreach {
+	return NewNodeForeach(
+		x.Attr("item"),
+		x.Attr("index"),
+		x.Attr("collection"),
+		x.Attr("open"),
+		x.Attr("separator"),
+		x.Attr("close"),
+		x.Child(),
+	)
+}
+
+func TokenNewNodeInclude(x Token) *Include {
+	return NewNodeInclude(x.Attr("refid"))
+}
+
+func TokenNewNodeText(x Token) *Text {
+	return NewNodeText(x.Data())
+}
