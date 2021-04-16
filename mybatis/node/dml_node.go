@@ -14,31 +14,6 @@ type DMLRoot struct {
 	UseGeneratedKeys bool
 }
 
-func Select() *DMLRoot {
-	return &DMLRoot{Method: "SELECT"}
-}
-
-func (n *DMLRoot) IF(test string) *IF {
-	nodeIF := NewNodeIF(test, n)
-	n.Child = append(n.Child, nodeIF)
-	return nodeIF
-}
-
-func (n *DMLRoot) Foreach(item, index, collection, open, separator, close string) *Foreach {
-	foreach := NewNodeForeach(item, index, collection, open, separator, close, n)
-	n.Child = append(n.Child, foreach)
-	return foreach
-}
-
-func (n *DMLRoot) Include(refId string) Cell {
-	n.Child = append(n.Child, NewNodeInclude(refId))
-	return n
-}
-
-func (n *DMLRoot) Text(s string) Cell {
-	n.Child = append(n.Child, NewNodeText(s))
-	return n
-}
 
 type PrePareSQL struct {
 	SQL     string
@@ -61,7 +36,7 @@ func (n *DMLRoot) pare(args map[string]interface{}) (s string, err error) {
 	return strings.TrimSpace(nodes), err
 }
 
-// 预解析SQL
+// PareSQL 预解析SQL
 func (n *DMLRoot) PareSQL(args map[string]interface{}) (preSQL *PrePareSQL, err error) {
 	pare, err := n.pare(args)
 	if err != nil {

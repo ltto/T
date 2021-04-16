@@ -75,12 +75,12 @@ func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 	element := doc.SelectElement("mapper")
 	m := findSQLTPL(element, element.ChildElements())
 
-	sqlTag := make(map[string]*etree.Element, len(m["sql"]))
+	includes := make(map[string]node.Token, len(m["sql"]))
 	for i, v := range m["sql"] {
 		id := v.SelectAttrValue("id", "")
-		sqlTag[id] = m["sql"][i]
+		includes[id] = node.NewXmlToken(m["sql"][i])
 	}
-	if err = loadDMLS(m, &dml, sqlTag); err != nil {
+	if err = loadDMLS(m, &dml, includes); err != nil {
 		return
 	}
 	dml.e = e
@@ -88,23 +88,23 @@ func (e *Engine) Load(XMLPath string) (dml DML, err error) {
 	return
 }
 
-func loadDMLS(m map[string][]*etree.Element, dml *DML, sqlTag map[string]*etree.Element) (err error) {
-	if err = loadDml(m, "insert", dml, sqlTag); err != nil {
+func loadDMLS(m map[string][]*etree.Element, dml *DML, includes map[string]node.Token) (err error) {
+	if err = loadDml(m, "insert", dml, includes); err != nil {
 		return
 	}
-	if err = loadDml(m, "select", dml, sqlTag); err != nil {
+	if err = loadDml(m, "select", dml, includes); err != nil {
 		return
 	}
-	if err = loadDml(m, "update", dml, sqlTag); err != nil {
+	if err = loadDml(m, "update", dml, includes); err != nil {
 		return
 	}
-	if err = loadDml(m, "delete", dml, sqlTag); err != nil {
+	if err = loadDml(m, "delete", dml, includes); err != nil {
 		return
 	}
 	return
 }
 
-func loadDml(m map[string][]*etree.Element, key string, dml *DML, sqlTag map[string]*etree.Element) (err error) {
+func loadDml(m map[string][]*etree.Element, key string, dml *DML, includes map[string]node.Token) (err error) {
 	elements := m[key]
 	for i := range elements {
 		id := elements[i].SelectAttrValue("id", "")
@@ -114,7 +114,7 @@ func loadDml(m map[string][]*etree.Element, key string, dml *DML, sqlTag map[str
 		if dml.Cmd == nil {
 			dml.Cmd = make(map[string]*node.DMLRoot, 0)
 		}
-		dml.Cmd[id] = NewNodeRoot(elements[i], sqlTag)
+		dml.Cmd[id] = NewNodeRoot(node.NewXmlToken(elements[i]), includes)
 	}
 	return nil
 }

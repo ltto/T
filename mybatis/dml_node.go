@@ -1,31 +1,21 @@
 package mybatis
 
 import (
-	"github.com/beevik/etree"
 	"github.com/ltto/T/mybatis/node"
 	"strconv"
 )
 
-func NewNodeRoot(root *etree.Element, Sql map[string]*etree.Element) *node.DMLRoot {
-	id := root.SelectAttrValue("id", "")
-	method := root.Tag
-	child := node.PareChildXML(root.Child)
-	UseGeneratedKeys := false
-	if method == "insert" {
-		UseGeneratedKeys, _ = strconv.ParseBool(root.SelectAttrValue("useGeneratedKeys", "false"))
-	}
+func NewNodeRoot(root node.Token, includes map[string]node.Token) *node.DMLRoot {
+	UseGeneratedKeys, _ := strconv.ParseBool(root.Attr("useGeneratedKeys"))
 	dmlRoot := &node.DMLRoot{
-		Child:            child,
-		ID:               id,
+		Child:            root.Child(),
+		ID:               root.Attr("id"),
 		SQLInclude:       make(map[string]*node.DMLRoot),
-		Method:           method,
+		Method:           root.Tag(),
 		UseGeneratedKeys: UseGeneratedKeys,
 	}
-	if len(Sql) != 0 {
-		for k, element := range Sql {
-			dmlRoot.SQLInclude[k] = NewNodeRoot(element, nil)
-		}
+	for k, element := range includes {
+		dmlRoot.SQLInclude[k] = NewNodeRoot(element, nil)
 	}
-
 	return dmlRoot
 }
