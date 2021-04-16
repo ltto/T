@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/ltto/T/gobox/ref"
+	"github.com/ltto/T/mybatis/bind"
 	"github.com/ltto/T/mybatis/node"
 	"reflect"
 	"strings"
@@ -25,18 +26,13 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 			result *SQLResult
 			err    error
 		)
-		defer func() {
-			//if i := recover(); i != nil {
-			//	returns = bindReturn(ft, returnValue, errors.New(fmt.Sprint("recover():", i, "\r\n", string(debug.Stack()))))
-			//}
-		}()
 		sqlExc, err := PareSQL(pareArgs(args, mappings), n)
 		if err != nil {
-			return bindReturn(ft, nil, err)
+			return bind.Return(ft, nil, err)
 		}
 
 		if result, err = sqlExc.ExecSQL(db()); err != nil {
-			return bindReturn(ft, result, err)
+			return bind.Return(ft, nil, err)
 		}
 		//if n.UseGeneratedKeys {
 		//	switch sqlExc.Operate {
@@ -51,7 +47,7 @@ func makeFunc(n *node.DMLRoot, ft reflect.Type, tagStr string, db func() SqlCmd,
 		//		return bindReturn(ft, result, err)
 		//	}
 		//}
-		return bindReturn(ft, result, err)
+		return bind.Return(ft, result.Rows, err)
 	}), nil
 }
 func pareArgs(args []reflect.Value, mappings []string) (m map[string]interface{}) {

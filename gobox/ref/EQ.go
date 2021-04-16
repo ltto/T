@@ -62,20 +62,8 @@ func IsValuer(t reflect.Type) bool {
 	return false
 }
 
+var et = reflect.ValueOf(map[error]error{}).Type().Elem()
+
 func IsError(t reflect.Type) bool {
-	if t.String() == "error" {
-		return true
-	}
-	method, ok := t.MethodByName("Error")
-	if !ok {
-		return false
-	}
-	mt := method.Func.Type()
-	if mt.Kind() != reflect.Func {
-		return false
-	}
-	if !(mt.NumIn() == 1 && mt.NumOut() == 1) {
-		return false
-	}
-	return mt.In(0) == t && mt.Out(0) == reflect.TypeOf("")
+	return t.AssignableTo(et)
 }

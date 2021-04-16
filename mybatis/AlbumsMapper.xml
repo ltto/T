@@ -15,7 +15,7 @@
         SELECT
         <include refid="base"/>
         FROM `albums`
-        WHERE `cid`={id}
+        WHERE `cid`=#{id}
     </select>
 
     <!-- update -->

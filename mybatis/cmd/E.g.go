@@ -2,21 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/guregu/null"
-	"github.com/ltto/T/mybatis/node"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/guregu/null"
 	"github.com/ltto/T/mybatis"
 )
 
 func main() {
 	var albumsMapper AlbumsMapper
-	engine, err := mybatis.Open("mysql", "root:123@tcp(127.0.0.1:3306)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
+	engine, err := mybatis.Open("mysql", "root:123@tcp(127.0.0.1:3366)/im?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true")
 	if err != nil {
 		panic(err)
 	}
 	if err = engine.LoadAndBindMap(&mybatis.LoadConf{
-		PathPrefix: "/Users/liutongtong/gocode/T/mybatis",
+		PathPrefix: "/Users/ltt/go/src/github.com/ltto/T/mybatis/",
 		Tag:        "json",
 	}, map[string]interface{}{
 		"AlbumsMapper.xml": &albumsMapper,
@@ -28,17 +26,17 @@ func main() {
 		panic(err)
 	}
 
-	root := node.Select()
-	root.Text("SELECT `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`").Text("\r\nssssss")
-	fmt.Println(root.PareSQL(nil))
+	//root := node.Select()
+	//root.Text("SELECT `cid`, `userID`, `name`, `createdAt`, `updatedAt`, `deletedAt`").Text("\r\nssssss")
+	//fmt.Println(root.PareSQL(nil))
 	//albums := Albums{}
 	//albums.Name.Scan("xiaoming")
 	//fmt.Println(albums.Name.Value())
 	//fmt.Println(albumsMapper.Save(&albums))
 	//fmt.Println("commit", engine.Commit())
 	//fmt.Println(albums)
-	//id, err := albumsMapper.SelectByID(78)
-	//fmt.Println(id, err)
+	id, err := albumsMapper.SelectByID(78)
+	fmt.Println(id, err)
 
 }
 

@@ -1,4 +1,4 @@
-package mybatis
+package bind
 
 import (
 	"database/sql"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func bindReturn(ft reflect.Type, result *SQLResult, e error) (results []reflect.Value) {
+func Return(ft reflect.Type, rows *sql.Rows, e error) (results []reflect.Value) {
 	results = make([]reflect.Value, ft.NumOut())
 	var errIndex []int
 	var objIndex []int
@@ -22,7 +22,7 @@ func bindReturn(ft reflect.Type, result *SQLResult, e error) (results []reflect.
 	for _, index := range objIndex {
 		out := ft.Out(index)
 		if bindErr == nil {
-			value, err := bindReturnValue(out, result)
+			value, err := bindReturnValue(out, rows)
 			if err != nil {
 				bindErr = err
 				value = reflect.New(out).Elem()
@@ -62,34 +62,31 @@ func NewValue(t reflect.Type) (returnValue, seter reflect.Value) {
 	}
 	return
 }
-func bindReturnValue(t reflect.Type, result *SQLResult) (v reflect.Value, err error) {
-	if result == nil {
-		return reflect.Value{}, nil
-	}
+func bindReturnValue(t reflect.Type, rows *sql.Rows) (v reflect.Value, err error) {
 	returnValue, seter := NewValue(t)
 	outT := seter.Elem().Type()
 	switch (outT).Kind() {
 	case reflect.Map: //必须是map[string]interface{}
 		seter.Elem().Set(reflect.MakeMap(outT))
-		if err = result.scanOBJ(&seter, outT); err != nil {
+		if err = ScanOBJ(rows, &seter, outT); err != nil {
 			return
 		}
 	case reflect.Interface:
 		typeOf := reflect.TypeOf(map[string]interface{}{})
 		makeMap := reflect.MakeMap(typeOf)
-		if err = result.scanOBJ(&seter, typeOf); err != nil {
+		if err = ScanOBJ(rows, &seter, typeOf); err != nil {
 			return
 		}
 		seter.Elem().Set(makeMap)
 	case reflect.Slice:
 		slice := reflect.MakeSlice(outT, 0, 0)
-		if err = result.scanOBJ(&slice, slice.Type(), outT.Elem()); err != nil {
+		if err = ScanOBJ(rows, &slice, slice.Type(), outT.Elem()); err != nil {
 			return
 		}
 		seter.Elem().Set(slice)
 	case reflect.Struct:
 		elem := reflect.New(outT).Elem()
-		if err = result.scanOBJ(&elem, outT); err != nil {
+		if err = ScanOBJ(rows, &elem, outT); err != nil {
 			return
 		}
 		seter.Elem().Set(elem)

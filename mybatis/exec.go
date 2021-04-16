@@ -2,7 +2,7 @@ package mybatis
 
 import (
 	"database/sql"
-	"fmt"
+	"github.com/fatih/color"
 	"github.com/ltto/T/mybatis/node"
 )
 
@@ -68,7 +68,7 @@ func (s SqlExec) Exec(tx SqlCmd) (LastInsertId int64, RowsAffected int64, err er
 
 func (s SqlExec) ExecSQL(tx SqlCmd) (result *SQLResult, err error) {
 	result = &SQLResult{}
-	fmt.Println("SQLCmd:::", s.SQL, "   SQLParams:::", s.params)
+	color.Cyan("SQLCmd:::%v\nSQLParams:::%v\n", s.SQL, s.params)
 	if s.Operate == node.SELECT {
 		if result.Rows, err = s.Query(tx); err != nil {
 			return result, err
