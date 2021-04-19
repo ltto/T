@@ -43,15 +43,21 @@ func (n *IF) pareIF(args map[string]interface{}) (bool, error) {
 			return false, err
 		}
 		return fmt.Sprintf("%v", str0) == fmt.Sprintf("%v", str1), nil
+	}
+	if strings.Contains(n.Test, ">") {
+
+	}
+	xmlStr, err := FindStr(args, n.Test)
+	if err != nil {
+		return false, nil
+	}
+	if b, ok := xmlStr.(bool); ok {
+		return b, nil
 	} else {
-		xmlStr, err := FindStr(args, n.Test)
-		if err != nil {
-			return false, nil
-		}
-		if b, ok := xmlStr.(bool); ok {
-			return b, nil
-		} else {
-			return false, errors.New("bad if test not bool")
-		}
+		return false, errors.New("bad if test not bool")
 	}
 }
+
+//func split(test string) (string, string, bool) {
+//	return "", false, false
+//}

@@ -23,8 +23,36 @@ func (c *CodeToken) Child() []Node {
 func (c *CodeToken) Attr(key string) string {
 	return c.attr[key]
 }
+func IncludeSQL(id string, c ...Token) Token {
+	token := &CodeToken{tag: "sql", attr: map[string]string{"id": id}}
+	for i := range c {
+		token.child = append(token.child, doPareChild(c[i])...)
+	}
+	return token
+}
 func Select(c ...Token) Token {
 	token := &CodeToken{tag: "select"}
+	for i := range c {
+		token.child = append(token.child, doPareChild(c[i])...)
+	}
+	return token
+}
+func Insert(c ...Token) Token {
+	token := &CodeToken{tag: "insert"}
+	for i := range c {
+		token.child = append(token.child, doPareChild(c[i])...)
+	}
+	return token
+}
+func Update(c ...Token) Token {
+	token := &CodeToken{tag: "update"}
+	for i := range c {
+		token.child = append(token.child, doPareChild(c[i])...)
+	}
+	return token
+}
+func Delete(c ...Token) Token {
+	token := &CodeToken{tag: "delete"}
 	for i := range c {
 		token.child = append(token.child, doPareChild(c[i])...)
 	}
@@ -52,12 +80,8 @@ func For_(index string, item string, collection string, open string, separator s
 	}
 	return token
 }
-func Include_(refId string, c ...Token) Token {
-	token := &CodeToken{tag: "sql", attr: map[string]string{"refid": refId}}
-	for i := range c {
-		token.child = append(token.child, doPareChild(c[i])...)
-	}
-	return token
+func Include_(refId string) Token {
+	return &CodeToken{tag: "include", attr: map[string]string{"refid": refId}}
 }
 func Text_(data string) Token {
 	return &CodeToken{data: data}

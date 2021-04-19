@@ -14,11 +14,14 @@ type DMLRoot struct {
 	UseGeneratedKeys bool
 }
 
-
 type PrePareSQL struct {
 	SQL     string
 	Params  []interface{}
 	Operate SQLOperate
+}
+
+func (p PrePareSQL) String() string {
+	return fmt.Sprint(p.SQL, p.Params)
 }
 
 func (n *DMLRoot) pare(args map[string]interface{}) (s string, err error) {
