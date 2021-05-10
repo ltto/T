@@ -73,6 +73,8 @@ func find(v reflect.Value, app []string) (interface{}, error) {
 			return v.Float(), nil
 		case reflect.String:
 			return v.String(), nil
+		case reflect.Bool:
+			return v.Bool(), nil
 		default:
 			return nil, fmt.Errorf("%v type not supported", v.Kind())
 		}

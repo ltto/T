@@ -3,6 +3,7 @@ package node
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -29,35 +30,75 @@ func (n *IF) pareIF(args map[string]interface{}) (bool, error) {
 	if err == nil {
 		return parseBool, nil
 	}
-	if strings.Contains(n.Test, "=") {
-		split := strings.Split(n.Test, "=")
-		if len(split) != 2 {
-			return false, errors.New("bad if " + n.Test)
-		}
-		str0, err := FindStr(args, split[0])
-		if err != nil {
-			return false, err
-		}
-		str1, err := FindStr(args, split[1])
-		if err != nil {
-			return false, err
-		}
-		return fmt.Sprintf("%v", str0) == fmt.Sprintf("%v", str1), nil
-	}
-	if strings.Contains(n.Test, ">") {
-
-	}
-	xmlStr, err := FindStr(args, n.Test)
+	s1, s2, fuc, err := doSplit(n.Test, args)
 	if err != nil {
-		return false, nil
+		return false, err
 	}
-	if b, ok := xmlStr.(bool); ok {
-		return b, nil
+	if fuc != 0 {
+		if fuc == '=' {
+			if fmt.Sprintf("%v", s1) == fmt.Sprintf("%v", s2) {
+				return true, nil
+			}
+		}
+		return doCmp(fmt.Sprintf("%v", s1), fmt.Sprintf("%v", s2), fuc)
 	} else {
-		return false, errors.New("bad if test not bool")
+		xmlStr, err := FindStr(args, n.Test)
+		if err != nil {
+			return false, nil
+		}
+		if b, ok := xmlStr.(bool); ok {
+			return b, nil
+		} else {
+			if b, err = strconv.ParseBool(fmt.Sprintf("%v", xmlStr)); err != nil {
+				return false, errors.New("bad if test not bool")
+			} else {
+				return b, nil
+			}
+		}
 	}
 }
 
-//func split(test string) (string, string, bool) {
-//	return "", false, false
-//}
+func doCmp(s1, s2 string, fuc rune) (ok bool, err error) {
+	var f1, f2 float64
+	if f1, err = strconv.ParseFloat(s1, 10); err != nil {
+		return false, err
+	}
+	if f2, err = strconv.ParseFloat(s2, 10); err != nil {
+		return false, err
+	}
+	cmp := big.NewFloat(f1).Cmp(big.NewFloat(f2))
+	switch fuc {
+	case '=':
+		return cmp == 0, nil
+	case '>':
+		return cmp > 0, nil
+	case '<':
+		return cmp < 0, nil
+	default:
+		return false, errors.New("cmp func not found")
+	}
+}
+func doSplit(test string, args map[string]interface{}) (s1, s2 interface{}, fuc rune, err error) {
+	fuc = 0
+	if strings.Contains(test, "=") {
+		fuc = '='
+	} else if strings.Contains(test, ">") {
+		fuc = '>'
+	} else if strings.Contains(test, "<") {
+		fuc = '<'
+	} else {
+		return
+	}
+	split := strings.Split(test, string(fuc))
+	if len(split) != 2 {
+		err = errors.New("bad if " + test)
+		return
+	}
+	if s1, err = FindStr(args, split[0]); err != nil {
+		return
+	}
+	if s2, err = FindStr(args, split[1]); err != nil {
+		return
+	}
+	return
+}
