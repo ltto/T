@@ -66,9 +66,10 @@ func find(v reflect.Value, app []string) (interface{}, error) {
 				return nil, err
 			}
 			v = v.Index(i)
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			return v.Int(), nil
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return v.Uint(), nil
 		case reflect.Float64, reflect.Float32:
 			return v.Float(), nil
 		case reflect.String:
