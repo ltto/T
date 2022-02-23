@@ -21,7 +21,7 @@ type PrePareSQL struct {
 }
 
 func (p PrePareSQL) String() string {
-	return fmt.Sprint("<SQL>:", p.SQL, "    <Params>:", p.Params)
+	return fmt.Sprint("<SQL>:", p.SQL)
 }
 
 func (n *DMLRoot) pare(args map[string]interface{}) (s string, err error) {

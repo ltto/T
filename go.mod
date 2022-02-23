@@ -1,6 +1,6 @@
 module github.com/ltto/T
 
-go 1.13
+go 1.16
 
 require (
 	cloud.google.com/go v0.41.0 // indirect

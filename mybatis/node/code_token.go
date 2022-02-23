@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+type Includes map[string]Token
 type CodeToken struct {
 	string
 	tag   string

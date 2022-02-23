@@ -1,9 +1,9 @@
 package errors
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/ltto/T/gobox/utils"
 	"reflect"
 	"runtime"
 )
@@ -16,22 +16,43 @@ type E struct {
 	cause *E
 }
 
-func NewE(msg string, cause error) *E {
-	_, file, line, _ := runtime.Caller(1)
+func New(msg string) error {
+	return doNewErr(msg, nil)
+}
+func NewCause(cause error) error {
+	return doNewErr("", cause)
+}
+func NewErr(msg string, cause error) error {
+	return doNewErr(msg, cause)
+}
+
+func doNewErr(msg string, cause error) error {
+	_, file, line, _ := runtime.Caller(2)
 	err := &E{msg: msg, cause: nil, file: file, line: line}
 	err.e = err
 	if cause != nil {
 		e := &E{}
 		if errors.As(cause, &e) {
 			err.cause = e
+		} else {
+			err.cause = &E{msg: cause.Error(), e: cause}
 		}
-		err.cause = &E{msg: cause.Error(), e: cause}
 	}
 	return err
 }
 func (e *E) Error() string {
-	title := fmt.Sprintf("Error in Gorouter %d", utils.GetGID())
-	return fmt.Sprintf("%s %s%s", Red(title), e.String(), e.Cause())
+	pc, _, _, _ := runtime.Caller(1)
+	f := runtime.FuncForPC(pc)
+	method := "unknown method"
+	if f != nil {
+		method = f.Name()
+	}
+	title := fmt.Sprintf("Error in func: %s()", method)
+	errStr := fmt.Sprintf("%s %s%s\r\n", Red(title), e.String(), e.Cause())
+	if Base64Err {
+		errStr = base64.StdEncoding.EncodeToString([]byte(errStr))
+	}
+	return errStr
 }
 func (e *E) String() string {
 	f := e.file
@@ -47,7 +68,7 @@ func (e *E) String() string {
 }
 func (e *E) Cause() string {
 	if e.cause != nil {
-		title := fmt.Sprintf("\nCaused by: %d", utils.GetGID())
+		title := fmt.Sprintf("\nCaused by:")
 		c := fmt.Sprintf("%s %s", Red(title), e.cause.String())
 		c += e.cause.Cause()
 		return c
@@ -103,8 +124,11 @@ func White(str string) string {
 	return textColor(TextWhite, str)
 }
 
+var Colored = true
+var Base64Err = false
+
 func textColor(color int, str string) string {
-	if IsWindows() {
+	if !Colored {
 		return str
 	}
 
@@ -127,13 +151,5 @@ func textColor(color int, str string) string {
 		return fmt.Sprintf("\x1b[0;%dm%s\x1b[0m", TextWhite, str)
 	default:
 		return str
-	}
-}
-
-func IsWindows() bool {
-	if runtime.GOOS == "windows" {
-		return true
-	} else {
-		return false
 	}
 }

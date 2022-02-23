@@ -16,6 +16,8 @@ import (
 	"github.com/asticode/go-astilectron"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ltto/T/gobox/gen"
+	_ "embed"
+	"io/ioutil"
 )
 
 type L struct {
@@ -55,6 +57,12 @@ func (l L) deep() string {
 	return f + space
 }
 
+//go:embed resources/index.html
+var indexHTML []byte
+
+//go:embed resources/jq.js
+var jqJS []byte
+
 func main() {
 	// Set logger
 	//l := log.New(log.Writer(), log.Prefix(), log.Flags()|log.Llongfile)
@@ -92,7 +100,18 @@ func main() {
 			NodeIntegrationInWorker: astikit.BoolPtr(true),
 		},
 	}
-	if w, err = a.NewWindow(path.Join(home, ".astilectron", "resources", "index.html"), o); err != nil {
+	html := path.Join(home, ".astilectron", "resources", "index.html")
+	jq := path.Join(home, ".astilectron", "resources", "jq.js")
+
+	_ = os.MkdirAll(path.Dir(html), 0777)
+	if err = ioutil.WriteFile(html, indexHTML, 0777); err != nil {
+		panic(err)
+	}
+	if err = ioutil.WriteFile(jq, jqJS, 0777); err != nil {
+		panic(err)
+	}
+
+	if w, err = a.NewWindow(html, o); err != nil {
 		panic(err)
 	}
 	// Create windows
