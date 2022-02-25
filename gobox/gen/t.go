@@ -9,6 +9,8 @@ type Param struct {
 	JsonAble     bool              `json:"json_able"`
 	NullAble     bool              `json:"null_able"`
 	GormAble     bool              `json:"gorm_able"`
+	InitAble     bool              `json:"init_able"`
+	Out          string            `json:"out"`
 	Package      string            `json:"package"`
 	User         string            `json:"user"`
 	Host         string            `json:"host"`

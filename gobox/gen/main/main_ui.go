@@ -63,7 +63,7 @@ var indexHTML []byte
 //go:embed resources/jq.js
 var jqJS []byte
 
-func main() {
+func main1() {
 	// Set logger
 	//l := log.New(log.Writer(), log.Prefix(), log.Flags()|log.Llongfile)
 	l := L{Deep: 5, Close: true}
@@ -122,7 +122,6 @@ func main() {
 
 	w.OnMessage(func(m *astilectron.EventMessage) interface{} {
 		var s string
-		fmt.Println(s)
 		if err := m.Unmarshal(&s); err != nil {
 			return rep{-1, err.Error()}
 		}
@@ -136,7 +135,6 @@ func main() {
 		}
 		return rep{0, f}
 	})
-
 	// Blocking pattern
 	a.Wait()
 }
@@ -154,43 +152,7 @@ type Msg struct {
 func (m Msg) f() (interface{}, error) {
 	switch m.F {
 	case "scan":
-		param := m.Data
-		if param.Regexp == "" {
-			param.Regexp = ".*"
-		}
-		compile, err := regexp.Compile(param.Regexp)
-		if err != nil {
-			return nil, err
-		}
-		if !(param.Password == "") {
-			param.Password = ":" + param.Password
-		}
-		url := fmt.Sprintf("%v%v@tcp(%v:%v)/%v?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true",
-			param.User,
-			param.Password,
-			param.Host,
-			param.Port,
-			param.Database,
-		)
-		db, err := sql.Open("mysql", url)
-		if err != nil {
-			return nil, err
-		}
-		rows, err := db.Query("SHOW TABLES ")
-		if err != nil {
-			return nil, err
-		}
-		var tables []string
-		var tab string
-		for rows.Next() {
-			if err := rows.Scan(&tab); err != nil {
-				return nil, err
-			}
-			if compile.Match([]byte(tab)) {
-				tables = append(tables, tab)
-			}
-		}
-		return tables, nil
+		return tabs(m.Data)
 
 	case "gen":
 		result, err := gen.ScanTable(&m.Data)
@@ -200,4 +162,73 @@ func (m Msg) f() (interface{}, error) {
 		return result, nil
 	}
 	return nil, errors.New("fname err")
+}
+
+func tabs(param gen.Param) ([]string, error) {
+	if param.Regexp == "" {
+		param.Regexp = ".*"
+	}
+	compile, err := regexp.Compile(param.Regexp)
+	if err != nil {
+		return nil, err
+	}
+	if !(param.Password == "") {
+		param.Password = ":" + param.Password
+	}
+	url := fmt.Sprintf("%v%v@tcp(%v:%v)/%v?charset=utf8mb4&collation=utf8mb4_bin&loc=Local&parseTime=true",
+		param.User,
+		param.Password,
+		param.Host,
+		param.Port,
+		param.Database,
+	)
+	db, err := sql.Open("mysql", url)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := db.Query("SHOW TABLES ")
+	if err != nil {
+		return nil, err
+	}
+	var tables []string
+	var tab string
+	for rows.Next() {
+		if err := rows.Scan(&tab); err != nil {
+			return nil, err
+		}
+		if compile.Match([]byte(tab)) {
+			tables = append(tables, tab)
+		}
+	}
+	return tables, nil
+}
+func main() {
+	param := gen.Param{
+		InitAble:     true,
+		Out:          "/Users/ltt/ltto/gocode/XaaS-backend/dao",
+		Package:      "dao",
+		User:         "root",
+		Host:         "127.0.0.1",
+		Port:         "3306",
+		Password:     "123456789",
+		Database:     "xaas",
+		Table2struct: map[string]string{},
+	}
+	tab, err := tabs(param)
+	if err != nil {
+		panic(err)
+	}
+	for _, t := range tab {
+		param.Table2struct[t] = Case2Camel(t)
+	}
+	_, err = gen.ScanTable(&param)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func Case2Camel(name string) string {
+	name = strings.Replace(name, "_", " ", -1)
+	name = strings.Title(name)
+	return strings.Replace(name, " ", "", -1)
 }

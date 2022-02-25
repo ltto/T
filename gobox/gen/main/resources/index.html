@@ -35,14 +35,12 @@
         </td>
     </tr>
     <tr>
-        <td>
+        <td colspan="3">
             <label> <input id="json_able" type="checkbox" name="json_able" value="json_able" checked/> JsonAble </label>
-        </td>
-        <td>
             <label> <input id="null_able" type="checkbox" name="null_able" value="null_able" checked/> NullAble </label>
-        </td>
-        <td>
             <label> <input id="gorm_able" type="checkbox" name="gorm_able" value="gorm_able" checked/> GormAble </label>
+            <label> <input id="init_able" type="checkbox" name="init_able" value="init_able" checked/> InitAble </label>
+            <label> OutDir:<input id="out" type="text" name="out"/> </label>
         </td>
     </tr>
     <tr>
@@ -69,6 +67,8 @@
                 "json_able": $("#json_able").is(":checked"),
                 "null_able": $("#null_able").is(':checked'),
                 "gorm_able": $("#gorm_able").is(':checked'),
+                "init_able": $("#init_able").is(':checked'),
+                "out": $("#out").val(),
                 "user": $("#user").val(),
                 "host": $("#host").val(),
                 "port": $("#port").val(),
@@ -109,6 +109,8 @@
                 "json_able": $("#json_able").is(":checked"),
                 "null_able": $("#null_able").is(':checked'),
                 "gorm_able": $("#gorm_able").is(':checked'),
+                "init_able": $("#init_able").is(':checked'),
+                "out": $("#out").val(),
                 "user": $("#user").val(),
                 "host": $("#host").val(),
                 "port": $("#port").val(),

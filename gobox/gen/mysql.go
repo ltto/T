@@ -7,6 +7,10 @@ import (
 
 	"github.com/dave/jennifer/jen"
 	"github.com/jinzhu/gorm"
+	"os"
+	"path"
+	"errors"
+	"io/ioutil"
 )
 
 type Null bool
@@ -74,13 +78,13 @@ type DescTab struct {
 
 func addStruct(f *jen.File, tab, name string, d []DescTab) {
 	var codes []jen.Code
-	codes = append(codes, jen.Id("gorm.Model"))
+	codes = append(codes, jen.Qual("gorm.io/gorm", "Model"))
 
 	for i := range d {
 		if strings.EqualFold(d[i].Field, "id") ||
-			strings.EqualFold(d[i].Field, "CreatedAt") ||
-			strings.EqualFold(d[i].Field, "UpdatedAt") ||
-			strings.EqualFold(d[i].Field, "DeletedAt") {
+			strings.EqualFold(d[i].Field, "Created_At") ||
+			strings.EqualFold(d[i].Field, "Updated_At") ||
+			strings.EqualFold(d[i].Field, "Deleted_At") {
 			continue
 		}
 		field := d[i].Type.Field()
@@ -118,7 +122,7 @@ func addCRUD(f *jen.File, tab, name string, d []DescTab) {
 
 	sqlName = "GetOne" + name
 	f.Comment(sqlName)
-	f.Func().Id(sqlName).Params(jen.Id("offset"), jen.Id("limit").Int(), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id(name), jen.Err().Error()).Block(
+	f.Func().Id(sqlName).Params(jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id(name), jen.Err().Error()).Block(
 		jen.Return(jen.Id("TX"+sqlName).Call(DB, jen.Id("cond..."))),
 	)
 	f.Func().Id("TX"+sqlName).Params(jen.Id("tx").Id("*gorm.DB"), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id(name), jen.Err().Error()).Block(
@@ -127,11 +131,26 @@ func addCRUD(f *jen.File, tab, name string, d []DescTab) {
 	)
 	sqlName = "GetList" + name
 	f.Comment(sqlName)
-	f.Func().Id(sqlName).Params(jen.Id("offset"), jen.Id("limit").Int(), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id("[]"+name), jen.Err().Error()).Block(
-		jen.Return(jen.Id("TX"+sqlName).Call(DB, jen.Id("offset"), jen.Id("limit"), jen.Id("cond..."))),
+	f.Func().Id(sqlName).Params(jen.Id("offset"), jen.Id("limit").Int(), jen.Id("order").Map(jen.String()).Bool(), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id("[]"+name), jen.Id("count").Int64(), jen.Err().Error()).Block(
+		jen.Return(jen.Id("TX"+sqlName).Call(DB, jen.Id("offset"), jen.Id("limit"), jen.Id("order"), jen.Id("cond..."))),
 	)
-	f.Func().Id("TX"+sqlName).Params(jen.Id("tx").Id("*gorm.DB"), jen.Id("offset"), jen.Id("limit").Int(), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id("[]"+name), jen.Err().Error()).Block(
-		jen.Err().Op("=").Id("tx").Op(".").Id("Model").Call(model).Op(".").Id("Select").Call(jen.Lit(selectStr)).Op(".").Id("Offset").Call(jen.Id("offset")).Op(".").Id("Limit").Call(jen.Id("limit")).Op(".").Id("Find").Call(jen.Id("&result"), jen.Id("cond...")).Op(".Error"),
+	f.Func().Id("TX"+sqlName).Params(jen.Id("tx").Id("*gorm.DB"), jen.Id("offset"), jen.Id("limit").Int(), jen.Id("order").Map(jen.String()).Bool(), jen.Id("cond").Id("...interface{}")).Params(jen.Id("result").Id("[]"+name), jen.Id("count").Int64(), jen.Err().Error()).Block(
+		jen.Id("temp").Op(":=").Id("tx").Op(".").Id("Model").Call(model).Op(".").Id("Select").Call(jen.Lit(selectStr)),
+		jen.If(jen.Id("len").Call(jen.Id("cond")).Op(">").Id("0")).Block(
+			jen.Id("temp").Op(".").Id("Where").Call(jen.Id("cond[0]"), jen.Id("cond[1:]...")),
+			jen.Return(),
+		),
+		jen.Id("temp").Op("=").Id("temp").Op(".").Id("Count").Call(jen.Id("&count")).Op(".").Id("Offset").Call(jen.Id("offset")).Op(".").Id("Limit").Call(jen.Id("limit")),
+		jen.If(jen.Len(jen.Id("order")).Op(">").Id("0")).Block(
+			jen.Id("column").Op(":=").Qual("gorm.io/gorm/clause", "OrderByColumn").Block(),
+			jen.For(jen.Id("s, b := range order")).Block(
+				jen.Id("column.Column.Name = s"),
+				jen.Id("column.Desc = b"),
+				jen.Break(),
+			),
+			jen.Id("temp.Order(column)"),
+		),
+		jen.Err().Op("=").Id("temp").Op(".").Id("Scan").Call(jen.Id("&result")).Op(".Error"),
 		jen.Return(),
 	)
 
@@ -153,7 +172,6 @@ func addCRUD(f *jen.File, tab, name string, d []DescTab) {
 	)
 	f.Func().Id("TX"+sqlName).Params(jen.Id("tx").Id("*gorm.DB"), jen.Id("obj").Id("..."+name)).Params(jen.Err().Error()).Block(
 		jen.Return(jen.Id("tx").Op(".").Id("Model").Call(model)).Op(".").Id("Create").Call(jen.Id("&obj")).Op(".Error"),
-
 	)
 
 	sqlName = "Update" + name
@@ -199,29 +217,66 @@ func ScanTable(param *Param) (result string, err error) {
 	if err != nil {
 		return result, err
 	}
-	file := jen.NewFile(param.Package)
 
+	out := param.Out
+	if len(out) == 0 {
+		file := jen.NewFile(param.Package)
+		if param.InitAble {
+			InitCode(file, url)
+		}
+		for tab, structName := range param.Table2struct {
+			if err = StructCode(file, db, tab, structName); err != nil {
+				return "", err
+			}
+		}
+		src := fmt.Sprintf("%#v", file)
+		return src, nil
+	} else {
+		if !path.IsAbs(out) {
+			return "", errors.New("不是绝对路径")
+		}
+		_ = os.MkdirAll(out, 0777)
+		var files = map[string]*jen.File{}
+		if param.InitAble {
+			file := jen.NewFile(param.Package)
+			InitCode(file, url)
+			files["a_init.go"] = file
+		}
+		for tab, structName := range param.Table2struct {
+			file := jen.NewFile(param.Package)
+			if err = StructCode(file, db, tab, structName); err != nil {
+				return "", err
+			}
+			files[tab+".go"] = file
+		}
+		for name, file := range files {
+			err := ioutil.WriteFile(path.Join(out, name), []byte(fmt.Sprintf("%#v", file)), 0777)
+			if err != nil {
+				return "", err
+			}
+		}
+		return "OKKKK", nil
+	}
+}
+func InitCode(file *jen.File, url string) {
 	file.Func().Id("init").Params().Block(
 		jen.Id("dsn").Op(":=").Lit(url),
 		jen.Id("db").Op(",").Id("err").Op(":=").Qual("gorm.io/gorm", "Open").Call(jen.Qual("gorm.io/driver/mysql", "Open").Call(jen.Id("dsn")), jen.Id("&gorm.Config").Block(
-			jen.Id("Logger").Op(":").Id("logger.Default.LogMode").Call(jen.Id("logger.Info")).Op(","),
+			jen.Id("Logger").Op(":").Qual("gorm.io/gorm/logger", "Default.LogMode").Call(jen.Id("logger.Info")).Op(","),
 		)),
 		jen.If(jen.Id("err").Op("!=").Nil()).Block(jen.Panic(jen.Id("err"))),
 		jen.Id("DB").Op("=").Id("db"),
 	)
-
 	file.Var().Id("DB").Id("*gorm.DB")
+}
 
-	table2struct := param.Table2struct
-	for tab, structName := range table2struct {
-		var tabField []DescTab
-		err = db.Raw("DESC " + tab).Scan(&tabField).Error
-		if err != nil {
-			return result, err
-		}
-		addStruct(file, tab, structName, tabField)
-		addCRUD(file, tab, structName, tabField)
+func StructCode(file *jen.File, db *gorm.DB, tab, structName string) (err error) {
+	var tabField []DescTab
+	err = db.Raw("DESC " + tab).Scan(&tabField).Error
+	if err != nil {
+		return err
 	}
-	src := fmt.Sprintf("%#v", file)
-	return src, nil
+	addStruct(file, tab, structName, tabField)
+	addCRUD(file, tab, structName, tabField)
+	return nil
 }
