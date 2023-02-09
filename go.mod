@@ -11,7 +11,7 @@ require (
 	github.com/dave/jennifer v1.4.0
 	github.com/fatih/color v1.10.0
 	github.com/gin-contrib/sessions v0.0.1
-	github.com/gin-gonic/gin v1.7.0
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gorilla/sessions v1.2.0 // indirect
 	github.com/guregu/null v3.4.0+incompatible
